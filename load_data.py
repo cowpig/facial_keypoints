@@ -8,7 +8,7 @@ def str_to_float(string):
         return None
     return float(string)
 
-def load_data(filename):
+def load_train_set(filename):
     train_set = []
     labels = []
 
@@ -76,8 +76,11 @@ def display_image(line):
     plt.show()
 
 def stats(labels, label_names, labels_to_check):
-    if type(names_to_check[0]) != int:
-        label_indices = [label_names.index(name) for name in names_to_check]
+    # can take either the names of features or their indices
+    if type(labels_to_check[0]) != int:
+        label_indices = [label_names.index(name) for name in labels_to_check]
+    else:
+        label_indices = labels_to_check
 
     good = []
     bad = 0
@@ -85,11 +88,14 @@ def stats(labels, label_names, labels_to_check):
 
     # count images that are missing the labels
     for line in labels:
+        good_line = True
         for i in label_indices:
             if line[i] == None:
                 bad += 1
+                good_line = False
                 break
-        good.append(line)
+        if good_line:
+            good.append(line)
 
     # get some statistics on a feature
     counts = {}
@@ -101,7 +107,7 @@ def stats(labels, label_names, labels_to_check):
             counts[index].append(line[index])
 
     stats = {}
-    for index in indices:
+    for index in label_indices:
         name = label_names[index]
         stats[name] = {}
         stats[name]["avg"] = sum(counts[index]) / float(len(counts[index]))
@@ -133,13 +139,14 @@ def tests():
     print "pass"
 
 if __name__ == "__main__":
-    train_set, labels, label_names = load_data("data/training.csv")
+    train_set, labels, label_names = load_train_set("data/training.csv")
     display_image(random.choice(train_set))
     indices = [
-        label_names.index('left_eye_outer_corner_x'),
-        label_names.index('left_eye_outer_corner_y'),
-        label_names.index('left_eye_inner_corner_x'),
-        label_names.index('left_eye_inner_corner_y')
+        'left_eye_outer_corner_x',
+        'left_eye_outer_corner_y',
+        'left_eye_inner_corner_x',
+        'left_eye_inner_corner_y'
     ]
-    print stats(labels, indices)
+    import pprint
+    pprint.pprint(stats(labels, label_names, indices))
     tests() 
