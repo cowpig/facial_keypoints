@@ -75,7 +75,10 @@ def display_image(line):
     plt.gray()
     plt.show()
 
-def stats(labels, label_indices):
+def stats(labels, label_names, labels_to_check):
+    if type(names_to_check[0]) != int:
+        label_indices = [label_names.index(name) for name in names_to_check]
+
     good = []
     bad = 0
     n = len(label_indices)
@@ -88,17 +91,27 @@ def stats(labels, label_indices):
                 break
         good.append(line)
 
-    # get average, min, and max size for frames
-    sizes = []
+    # get some statistics on a feature
+    counts = {}
+    for index in label_indices:
+        counts[index] = []
+
     for line in good:
-        # TODO: hmm, maybe we need a list of (x,y) index pairs rather than just indices
-        pass 
+        for index in label_indices:
+            counts[index].append(line[index])
+
+    stats = {}
+    for index in indices:
+        name = label_names[index]
+        stats[name] = {}
+        stats[name]["avg"] = sum(counts[index]) / float(len(counts[index]))
+        stats[name]["min"] = min(counts[index])
+        stats[name]["max"] = max(counts[index])
+        
 
     return {
         'num_missing' : bad,
-        # 'minimum_size' : min(sizes),
-        # 'maximum_size' : max(sizes),
-        # 'average_size' : np.average(sizes)
+        'individual_stats' : stats
     }
 
 
