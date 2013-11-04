@@ -54,6 +54,49 @@ def feature_a(m, top_left, bot_right):
 
     return get_rect(m, top_left, (bot, mid_l)) - get_rect(m, (top, mid_r), bot_right)
 
+# The top/bottom 2-rectangle feature. 
+def feature_b(m, top_left, bot_right):
+    top, left = top_left
+    bot_right = bot_right
+
+    mid_t = np.floor((top+bot)/2.)
+    mid_b = np.ceil((top+bot)/2.)
+
+    return get_rect(m, top_left, (mid_t, right)) - get_rect(m, (mid_b, left), bot_right)
+
+# The 3-rectangle feature. 
+def feature_c(m, top_left, bot_right):
+    top, left = top_left
+    bot_right = bot_right
+
+    midleft_l = np.floor((left+right)/3.)
+    midleft_r = np.ceil((left+right)/3.)
+    midright_l = np.floor(2.*(left+right)/2.)
+    midright_r = np.ceil((2.*left+right)/2.)
+
+    left_rect = get_rect(m, top_left, (bot, midleft_l))
+    mid_rect = get_rect(m, (top, midleft_r), (bot, midright_l))
+    right_rect = get_rect(m, (top, midright_r), bot_right)
+
+    return left_rect + right_rect - mid_rect
+
+# The 4-rectangle feature. 
+def feature_d(m, top_left, bot_right):
+    top, left = top_left
+    bot_right = bot_right
+
+    mid_t = np.floor((top+bot)/2.)
+    mid_b = np.ceil((top+bot)/2.)
+    mid_l = np.floor((left+right)/2.)
+    mid_r = np.ceil((left+right)/2.)
+
+    rect_tl = get_rect(m, top_left, (mid_t, mid_l))
+    rect_bl = get_rect(m, (mid_b, left), (bot, mid_l))
+    rect_tr = get_rect(m, (top, mid_r), (mid_t, left))
+    rect_br = get_rect(m, (mid_b, mid_r), bot_right))
+
+    return rect_tl + rect_br - rect_tr - rect_bl
+    
 # helper function for feature functions
 def mget(m, row, col):
     if (row == -1) or (col == -1):
@@ -131,10 +174,13 @@ def tests():
     bot_right = (random.choice(range(4)) + 4, random.choice(range(4)) + 4)
     dist = (bot_right[0] - top_left[0], bot_right[1] - top_left[1])
 
-    # make sure the rectangle gets calculated correctly
-    assert(get_rect(i_test, top_left, bot_right) == dist[0] * dist[1])
-    # make sure the feature works correctly
-    assert(feature_a(i_test, top_left, bot_right) == 0)
+    try:
+        # make sure the rectangle gets calculated correctly
+        assert(get_rect(i_test, top_left, bot_right) == dist[0] * dist[1])
+        # make sure the feature works correctly
+        assert(feature_a(i_test, top_left, bot_right) == 0)
+    except:
+        import pdb; pdb.set_trace
 
     print "pass"
 
