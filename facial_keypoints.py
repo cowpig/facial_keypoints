@@ -8,6 +8,11 @@ def str_to_float(string):
         return None
     return float(string)
 
+# loads the training set and processes it. Outputs two 2d arrays: 
+#   the raw image data, and the facial feature coordinates. the third
+#   array it outputs is the list of the names of the facial features
+#   (e.g. 'left_eye_outer_corner_x') I generally call the values 'labels'
+#   and that refers to the number, not the string
 def load_train_set(filename):
     train_set = []
     labels = []
@@ -25,9 +30,14 @@ def load_train_set(filename):
 
     return (train_set, labels, label_names)
 
+# takes a line containing raw image data, and reshapes it into a 96 row,
+#   96-column matrix
 def to_matrix(line):
+    assert(len(line) == 96 * 96)
     return np.reshape(line, (96, 96))
 
+# takes a matrix of pixel densities and outputs the integral image (as described
+#   in the viola-jones paper)
 def integral_matrix(m):
     l, w = m.shape
     out = np.zeros((l,w))
@@ -43,6 +53,22 @@ def integral_matrix(m):
             out[i,j] = m[i,j] + left + up - up_and_left
 
     return out 
+
+# takes an integral image matrix, and the top-left and bottom-right points,
+#   and returns the sum of the sub-image's pixels
+def get_rect(m, top_left, bot_right):
+    top, left = top_left
+    bot, right = bot_right
+    # this is so that a rect from (0,0) to (1,1) is not zero.
+    top -= 1
+    left -= 1
+    return mget(m, top, left) + mget(m, bot, right) - mget(m, top, right) - mget(m, bot, left)
+
+# helper function for feature functions
+def mget(m, row, col):
+    if (row == -1) or (col == -1):
+        return 0
+    return m[row, col]
 
 # The right/left 2-rectangle feature. 
 def feature_a(m, top_left, bot_right):
@@ -97,27 +123,16 @@ def feature_d(m, top_left, bot_right):
 
     return rect_tl + rect_br - rect_tr - rect_bl
     
-# helper function for feature functions
-def mget(m, row, col):
-    if (row == -1) or (col == -1):
-        return 0
-    return m[row, col]
-
-
-def get_rect(m, top_left, bot_right):
-    top, left = top_left
-    bot, right = bot_right
-    # this is so that a rect from (0,0) to (1,1) is not zero.
-    top -= 1
-    left -= 1
-    return mget(m, top, left) + mget(m, bot, right) - mget(m, top, right) - mget(m, bot, left)
-
-
-def display_image(line):
-    plt.imshow(to_matrix(line))
+# takes an image and displays it
+def display_image(img):
+    if len(img) == 96*96:
+        plt.imshow(to_matrix(img))
+    else:
+        plt.imshow(img)
     plt.gray()
     plt.show()
 
+# calculates the some stats about a set (or list) of label(name)s
 def stats(labels, label_names, labels_to_check):
     # can take either the names of features or their indices
     if type(labels_to_check[0]) != int:
@@ -177,8 +192,11 @@ def tests():
     try:
         # make sure the rectangle gets calculated correctly
         assert(get_rect(i_test, top_left, bot_right) == dist[0] * dist[1])
-        # make sure the feature works correctly
+        # make sure the features work correctly
         assert(feature_a(i_test, top_left, bot_right) == 0)
+        assert(feature_b(i_test, top_left, bot_right) == 0)
+        assert(feature_c(i_test, top_left, bot_right) - (dist[0] * dist[1]/3.) <= 1)
+        assert(feature_d(i_test, top_left, bot_right) == 0)
     except:
         import pdb; pdb.set_trace
 
