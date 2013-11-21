@@ -214,3 +214,21 @@ if __name__ == "__main__":
     import pprint
     pprint.pprint(stats(labels, label_names, indices))
     tests() 
+
+class PerceptronEye(Object):
+    def __init__(self, ftype, top_left, bot_right):
+        self.w = random.random()
+        self.ftype = ftype
+        self.top_left = top_left
+        self.bot_right = bot_right
+
+    def evaluate(img, answer):
+        result = self.w * self.ftype(img, self.top_left, self.bot_right)
+        if result > threshhold:
+            evaluate = 1
+        else:
+            evaluate = 0
+        if evaluate == answer:
+            self.w += .05
+        else:
+            self.w -= .05
