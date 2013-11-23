@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 from classifier import *
+from scipy import ndimage
 
 def str_to_float(string):
     if string == '':
@@ -126,7 +127,6 @@ def stats(labels, label_names, labels_to_check):
         'individual_stats' : stats
     }
 
-
 def tests():
     test = np.ones((8,8))
     i_test = integral_matrix(test)
@@ -150,15 +150,25 @@ def tests():
 
     print "pass"
 
-if __name__ == "__main__":
-    train_set, labels, label_names = load_train_set("data/training.csv")
-    display_image(random.choice(train_set))
-    indices = [
-        'left_eye_outer_corner_x',
-        'left_eye_outer_corner_y',
-        'left_eye_inner_corner_x',
-        'left_eye_inner_corner_y'
-    ]
-    import pprint
-    pprint.pprint(stats(labels, label_names, indices))
-    tests() 
+def resize(img, size):
+    return ndimage.interpolation.zoom(img, size)
+
+def get_subimage(img, top_left, bot_right):
+    top, left = top_left
+    bot_right = bot_right
+    return img[top:bot, left:right]
+
+
+
+# if __name__ == "__main__":
+#     train_set, labels, label_names = load_train_set("data/training.csv")
+#     display_image(random.choice(train_set))
+#     indices = [
+#         'left_eye_outer_corner_x',
+#         'left_eye_outer_corner_y',
+#         'left_eye_inner_corner_x',
+#         'left_eye_inner_corner_y'
+#     ]
+#     import pprint
+#     pprint.pprint(stats(labels, label_names, indices))
+#     tests() 

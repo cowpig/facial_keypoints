@@ -1,7 +1,6 @@
 import numpy as np
 
 class weakclass(object):
-	
 	def __init__(self, ftype, top_left, bot_right):
 		self.ftype = ftype
 		self.top_left = top_left
@@ -41,8 +40,6 @@ class weakclass(object):
 			parity = 1
 		else:
 			parity = -1
-
-
 
 	def perbefore(ar, stop):
 		positive = 0
@@ -162,3 +159,51 @@ def feature_d(m, top_left, bot_right):
     rect_br = get_rect(m, (mid_b, mid_r), bot_right)
 
     return rect_tl + rect_br - rect_tr - rect_bl
+
+def get_all_feature_coords(matrix_size):
+	feat_coords = {}
+
+	feat_coords['a'] = set()
+	min_size_a = (1,2)
+	
+	feat_coords['b'] = set()
+	min_size_b = (2,1)
+	
+	feat_coords['c'] = set()
+	min_size_c = (1,3)
+	
+	feat_coords['d'] = set()
+	min_size_d = (2,2)
+
+	for top in xrange(matrix_size[0]):
+		for left in xrange(matrix_size[1]):
+			for bot in xrange(top, matrix_size[0]):
+				for right in xrange(left, matrix_size[1]):
+					row_dist = bot - top
+					col_dist = right - left
+
+					if (min_size_a[0] <= row_dist 
+								and min_size_a[1] <= col_dist
+								and row_dist % min_size_a[0] == 0
+								and col_dist % min_size_a[1] == 0):
+						feat_coords['a'].add(((top, left), (bot, right)))
+
+					if (min_size_b[0] <= row_dist 
+								and min_size_b[1] <= col_dist
+								and row_dist % min_size_b[0] == 0
+								and col_dist % min_size_b[1] == 0):
+						feat_coords['b'].add(((top, left), (bot, right)))
+
+					if (min_size_c[0] <= row_dist 
+								and min_size_c[1] <= col_dist
+								and row_dist % min_size_c[0] == 0
+								and col_dist % min_size_c[1] == 0):
+						feat_coords['c'].add(((top, left), (bot, right)))
+
+					if (min_size_d[0] <= row_dist 
+								and min_size_d[1] <= col_dist
+								and row_dist % min_size_d[0] == 0
+								and col_dist % min_size_d[1] == 0):
+						feat_coords['d'].add(((top, left), (bot, right)))
+
+	return feat_coords
