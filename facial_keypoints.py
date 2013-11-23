@@ -119,7 +119,7 @@ def feature_d(m, top_left, bot_right):
     rect_tl = get_rect(m, top_left, (mid_t, mid_l))
     rect_bl = get_rect(m, (mid_b, left), (bot, mid_l))
     rect_tr = get_rect(m, (top, mid_r), (mid_t, left))
-    rect_br = get_rect(m, (mid_b, mid_r), bot_right)
+    rect_br = get_rect(m, (mid_b, mid_r), bot_right))
 
     return rect_tl + rect_br - rect_tr - rect_bl
     
@@ -177,7 +177,6 @@ def stats(labels, label_names, labels_to_check):
         'num_missing' : bad,
         'individual_stats' : stats
     }
-
 
 
 def tests():
