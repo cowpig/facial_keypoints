@@ -1,6 +1,7 @@
 import csv, random
 import numpy as np
 import matplotlib.pyplot as plt
+from weakclass import weakclass
 
 
 def str_to_float(string):
@@ -119,7 +120,7 @@ def feature_d(m, top_left, bot_right):
     rect_tl = get_rect(m, top_left, (mid_t, mid_l))
     rect_bl = get_rect(m, (mid_b, left), (bot, mid_l))
     rect_tr = get_rect(m, (top, mid_r), (mid_t, left))
-    rect_br = get_rect(m, (mid_b, mid_r), bot_right))
+    rect_br = get_rect(m, (mid_b, mid_r), bot_right)
 
     return rect_tl + rect_br - rect_tr - rect_bl
     
@@ -214,21 +215,3 @@ if __name__ == "__main__":
     import pprint
     pprint.pprint(stats(labels, label_names, indices))
     tests() 
-
-class PerceptronEye(Object):
-    def __init__(self, ftype, top_left, bot_right):
-        self.w = random.random()
-        self.ftype = ftype
-        self.top_left = top_left
-        self.bot_right = bot_right
-
-    def evaluate(img, answer):
-        result = self.w * self.ftype(img, self.top_left, self.bot_right)
-        if result > threshhold:
-            evaluate = 1
-        else:
-            evaluate = 0
-        if evaluate == answer:
-            self.w += .05
-        else:
-            self.w -= .05
