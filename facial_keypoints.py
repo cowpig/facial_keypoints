@@ -2,7 +2,7 @@ import csv, random
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
-from weakclass import weakclass
+from classifier import *
 
 def str_to_float(string):
     if string == '':
