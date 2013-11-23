@@ -1,7 +1,7 @@
 import csv, random
 import numpy as np
 import matplotlib.pyplot as plt
-
+from copy import deepcopy
 
 def str_to_float(string):
     if string == '':
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     pprint.pprint(stats(labels, label_names, indices))
     tests() 
 
-class PerceptronEye(Object):
+class Perceptron(Object):
     def __init__(self, ftype, top_left, bot_right):
         self.w = random.random()
         self.ftype = ftype
@@ -232,3 +232,48 @@ class PerceptronEye(Object):
             self.w += .05
         else:
             self.w -= .05
+
+def boost_em_up(perceptrons, images, labels, T):
+    perceptrons = deepcopy(perceptrons)
+
+    labels = np.array([int(label) for label in labels])
+
+    integrals = []
+    for image in images:
+        integrals.append(integral_matrix(image))
+
+    positives = sum(labels)
+    n = len(images)
+    negatives = n - positives
+
+    evals = {}
+    for perceptron in perceptrons:
+        evals[perceptron] = np.abs(labels - np.array([perceptron.eval(iimg) for iimg in integrals])) 
+
+    weights = []
+    for l in labels:
+        if l:
+            weights.append(1/(2*positives))
+        else:
+            weights.append(1/(2*negatives))
+
+    weights = np.array(weights)
+
+    boost_selection = []
+
+    for t in xrange(T):
+        best_percep = (perceptrons[0], np.dot(evals[perceptrons[0]] * weights))
+        for perceptron in perceptrons[1:]:
+            error = np.dot(evals[perceptron] * weights)
+            if error < best_percep[1]:
+                best_percep = (perceptron, error)
+
+        percep, err = best_percep
+        perceptrons.remove(percep)
+
+        beta = (err/(1-err))
+        weights = weights * beta ** 1 - evals[percep]
+        
+        boost_selection.append(percep, np.log(1/beta))
+
+    return boost_selection
