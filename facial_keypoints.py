@@ -179,6 +179,7 @@ def stats(labels, label_names, labels_to_check):
     }
 
 
+
 def tests():
     test = np.ones((8,8))
     i_test = integral_matrix(test)
