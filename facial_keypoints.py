@@ -1,6 +1,7 @@
 import csv, random
 import numpy as np
 import matplotlib.pyplot as plt
+from random import randint
 from copy import deepcopy
 from classifier import *
 from scipy import ndimage
@@ -23,12 +24,14 @@ def load_train_set(filename):
         r = csv.reader(f)
         label_names = r.next()[:-1]
 
-        for line in r:
+        for i, line in enumerate(r):
             try:
                 labels.append([str_to_float(s) for s in line[:-1]])
                 train_set.append([float(s) for s in line[-1].split(' ')])
             except:
                 import pdb; pdb.set_trace() # loads up python debugger
+            if i > 50:
+                break
 
     return (train_set, labels, label_names)
 
@@ -37,6 +40,7 @@ def load_train_set(filename):
 def to_matrix(line):
     assert(len(line) == 96 * 96)
     return np.reshape(line, (96, 96))
+
     
 # takes an image and displays it
 def display_image(img):
@@ -128,13 +132,27 @@ def get_subimage(img, top_left, bot_right):
 
 if __name__ == "__main__":
     train_set, labels, label_names = load_train_set("data/training.csv")
-    display_image(random.choice(train_set))
-    indices = [
-        'left_eye_outer_corner_x',
-        'left_eye_outer_corner_y',
-        'left_eye_inner_corner_x',
-        'left_eye_inner_corner_y'
-    ]
-    import pprint
-    pprint.pprint(stats(labels, label_names, indices))
-    tests() 
+    class1 = weakclass(feature_a, (20,20), (40,40))
+    myset = []
+    mylabels = []
+    for i in range(50):
+        mylabels.append(i % 2)
+
+    for i in range(50):
+        myset.append((to_matrix(train_set[i]), mylabels[i]))
+
+    class1.train(myset)
+
+    print class1.threshhold
+    print class1.evaluate(myset[15][0])
+
+    # display_image(random.choice(tr,in_set))
+    # indices = [
+    #     'left_eye_outer_corner_x',
+    #     'left_eye_outer_corner_y',
+    #     'left_eye_inner_corner_x',
+    #     'left_eye_inner_corner_y'
+    # ]
+    # import pprint
+    # pprint.pprint(stats(labels, label_names, indices))
+    # tests() 
