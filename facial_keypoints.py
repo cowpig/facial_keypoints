@@ -155,9 +155,8 @@ def label_distance(label, indices_a, indices_b):
 	return np.linalg.norm(point_a - point_b)
 
 def build_eye_classifier(train_set, labels):
-	max_dist_horizontal = 0
-	max_dist_vertical = 0
-
+	left_eye_center = (0, 1)
+	right_eye_center = (2, 3)
 	left_eye_inner = (4, 5)
 	left_eye_outer = (6, 7)
 	right_eye_inner = (8, 9)
@@ -166,8 +165,15 @@ def build_eye_classifier(train_set, labels):
 	left_eyebrow_outer = (14, 15)
 	right_eyebrow_inner = (16, 17)
 	right_eyebrow_outer = (18, 19)
+	nose_tip = (20, 21)
+	mouth_left_corner = (22, 23)
+	mouth_right_corner = (24, 25)
+	mouth_center_top_lip = (26, 27)
+	mouth_center_bottom_lip = (28, 29)
 
 
+	max_dist_horizontal = 0
+	max_dist_vertical = 0
 	distances = []
 	for i, label in enumerate(labels):
 		dist_h_left_eye = label_distance(label, left_eye_inner, left_eye_outer)
@@ -258,14 +264,14 @@ def build_eye_classifier(train_set, labels):
 		
 
 # if __name__ == "__main__":
-#     train_set, labels, label_names = load_train_set("data/training.csv")
-#     display_image(random.choice(train_set))
-#     indices = [
-#         'left_eye_outer_corner_x',
-#         'left_eye_outer_corner_y',
-#         'left_eye_inner_corner_x',
-#         'left_eye_inner_corner_y'
-#     ]
-#     import pprint
-#     pprint.pprint(stats(labels, label_names, indices))
-#     tests() 
+# 	train_set, labels, label_names = load_train_set("data/training.csv")
+# 	display_image(random.choice(train_set))
+# 	indices = [
+# 		'left_eye_outer_corner_x',
+# 		'left_eye_outer_corner_y',
+# 		'left_eye_inner_corner_x',
+# 		'left_eye_inner_corner_y'
+# 	]
+# 	import pprint
+# 	pprint.pprint(stats(labels, label_names, indices))
+# 	tests() 
