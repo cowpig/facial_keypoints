@@ -17,7 +17,7 @@ class weakclass(object):
 	def perbefore(self, ar, stop):
 		positive = 0
 
-		for i in xrange(stop + 1):
+		for i in xrange(stop):
 			if ar[i][1] == 1:
 				positive += 1
 
@@ -33,6 +33,8 @@ class weakclass(object):
 			return float(positive) / (len(ar) - start) * 100
 		except:
 			import pdb; pdb.set_trace()
+	
+	#train the weak classifier		
 	def train(self, imgs):
 		result = []
 		for pic in imgs:
@@ -41,44 +43,33 @@ class weakclass(object):
 
 		result = sorted(result)
 
-		ratios = []
+		summ = 0
+		for i in result:
+			summ += i[0]
 
-		for i, r  in enumerate(result):
-			ratios.append((self.perbefore(result, i), self.perafter(result, i)))
+		self.threshhold = summ / len(result)
 
 
-		maxratioindex = 0
-		maxratio = np.abs(ratios[0][1] - ratios[0][0])
-		for i, r in enumerate(ratios):
-			current = np.abs(ratios[i][1]- ratios[i][0])
-			if current > maxratio:
-				maxratioindex = i
-				maxratio = current
+		for i, r in enumerate(result):
+			if r[0] > self.threshhold:
+				threshindex = i
+				break
 
-		if ratios[maxratioindex][0] > ratios[maxratioindex][1]:
-			self.threshhold = result[maxratioindex + 1][0]
+
+		before = self.perbefore(result, threshindex)
+		after = self.perafter(result, threshindex)
+
+		if before > after:
 			self.parity = 1
 		else:
-			self.threshhold = result[maxratioindex][0]
-			self.parity = -1
+			self.parity = -1 
 
-	def perbefore(ar, stop):
-		positive = 0
+		print result
+		print self.parity
+		print "average = " + str(self.threshhold)
+		print "before = " + str(before)
+		print "after = " + str(after)
 
-		for i in xrange(stop):
-			if ar[i][1] == 1:
-				positive += 1
-
-		return positive / (stop + 1.) *100
-
-	def perafter(ar, stop):
-		positive = 0
-
-		for i in xrange((len(ar) - 1) - stop):
-			if ar[i + stop][1] == 1:
-				positive += 1
-
-		return positive / ((len(ar) - 1.) - stop) * 100
 
 
 # takes a set/list of weak classifiers and applies boosting to them, as described in the
@@ -141,8 +132,8 @@ def feature_a(m, top_left, bot_right):
 
 # The top/bottom 2-rectangle feature. 
 def feature_b(m, top_left, bot_right):
-    top, left = top_left
-    bot, right = bot_right
+	top, left = top_left
+	bot, right = bot_right
 
 	mid_t = np.floor((top+bot)/2.)
 	mid_b = np.ceil((top+bot)/2.)
@@ -151,8 +142,8 @@ def feature_b(m, top_left, bot_right):
 
 # The 3-rectangle feature. 
 def feature_c(m, top_left, bot_right):
-    top, left = top_left
-    bot, right = bot_right
+	top, left = top_left
+	bot, right = bot_right
 
 	midleft_l = np.floor((left+right)/3.)
 	midleft_r = np.ceil((left+right)/3.)
@@ -167,20 +158,20 @@ def feature_c(m, top_left, bot_right):
 
 # The 4-rectangle feature. 
 def feature_d(m, top_left, bot_right):
-    top, left = top_left
-    bot, right = bot_right
+	top, left = top_left
+	bot, right = bot_right
 
-    mid_t = np.floor((top+bot)/2.)
-    mid_b = np.ceil((top+bot)/2.)
-    mid_l = np.floor((left+right)/2.)
-    mid_r = np.ceil((left+right)/2.)
+	mid_t = np.floor((top+bot)/2.)
+	mid_b = np.ceil((top+bot)/2.)
+	mid_l = np.floor((left+right)/2.)
+	mid_r = np.ceil((left+right)/2.)
 
-    rect_tl = get_rect(m, top_left, (mid_t, mid_l))
-    rect_bl = get_rect(m, (mid_b, left), (bot, mid_l))
-    rect_tr = get_rect(m, (top, mid_r), (mid_t, left))
-    rect_br = get_rect(m, (mid_b, mid_r), bot_right)
+	rect_tl = get_rect(m, top_left, (mid_t, mid_l))
+	rect_bl = get_rect(m, (mid_b, left), (bot, mid_l))
+	rect_tr = get_rect(m, (top, mid_r), (mid_t, left))
+	rect_br = get_rect(m, (mid_b, mid_r), bot_right)
 
-    return rect_tl + rect_br - rect_tr - rect_bl
+	return rect_tl + rect_br - rect_tr - rect_bl
 
 def get_all_feature_coords(matrix_size):
 	feat_coords = {}
@@ -234,20 +225,20 @@ def get_all_feature_coords(matrix_size):
 # takes a matrix of pixel densities and outputs the integral image (as described
 #   in the viola-jones paper)
 def integral_matrix(m):
-    l, w = m.shape
-    out = np.zeros((l,w))
-    for i in xrange(l):
-        for j in xrange(w):
-            left = 0 if i == 0 else out[i-1,j]
-            up = 0 if j == 0 else out[i,j-1]
-            if i==0 or j==0:
-                up_and_left = 0
-            else:
-                up_and_left = out[i-1, j-1]
-            
-            out[i,j] = m[i,j] + left + up - up_and_left
+	l, w = m.shape
+	out = np.zeros((l,w))
+	for i in xrange(l):
+		for j in xrange(w):
+			left = 0 if i == 0 else out[i-1,j]
+			up = 0 if j == 0 else out[i,j-1]
+			if i==0 or j==0:
+				up_and_left = 0
+			else:
+				up_and_left = out[i-1, j-1]
+			
+			out[i,j] = m[i,j] + left + up - up_and_left
 
-    return out 
+	return out 
 
 	top, left = top_left
 	bot_right = bot_right
@@ -266,18 +257,18 @@ def integral_matrix(m):
 # takes an integral image matrix, and the top-left and bottom-right points,
 #   and returns the sum of the sub-image's pixels
 def get_rect(m, top_left, bot_right):
-    top, left = top_left
-    bot, right = bot_right
-    # this is so that a rect from (0,0) to (1,1) is not zero.
-    top -= 1
-    left -= 1
-    return mget(m, top, left) + mget(m, bot, right) - mget(m, top, right) - mget(m, bot, left)
+	top, left = top_left
+	bot, right = bot_right
+	# this is so that a rect from (0,0) to (1,1) is not zero.
+	top -= 1
+	left -= 1
+	return mget(m, top, left) + mget(m, bot, right) - mget(m, top, right) - mget(m, bot, left)
 
 # helper function for feature functions
 def mget(m, row, col):
-    if (row == -1) or (col == -1):
-        return 0
-    return m[row, col]
+	if (row == -1) or (col == -1):
+		return 0
+	return m[row, col]
 	top, left = top_left
 	bot, right = bot_right
 	# this is so that a rect from (0,0) to (1,1) is not zero.

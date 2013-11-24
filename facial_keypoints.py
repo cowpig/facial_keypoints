@@ -24,13 +24,13 @@ def load_train_set(filename):
         r = csv.reader(f)
         label_names = r.next()[:-1]
 
-        for i, line in enumerate(r):
+        for i,  line in enumerate(r):
             try:
                 labels.append([str_to_float(s) for s in line[:-1]])
                 train_set.append([float(s) for s in line[-1].split(' ')])
             except:
                 import pdb; pdb.set_trace() # loads up python debugger
-            if i > 50:
+            if i > 150:
                 break
 
     return (train_set, labels, label_names)
@@ -132,20 +132,13 @@ def get_subimage(img, top_left, bot_right):
 
 if __name__ == "__main__":
     train_set, labels, label_names = load_train_set("data/training.csv")
-    class1 = weakclass(feature_a, (20,20), (40,40))
+    class1 = weakclass(feature_a, (20,20), (35,35))
     myset = []
-    mylabels = []
-    for i in range(50):
-        mylabels.append(i % 2)
-
-    for i in range(50):
-        myset.append((to_matrix(train_set[i]), mylabels[i]))
+    for i in train_set:
+        myset.append((to_matrix(i), randint(0,1)))
 
     class1.train(myset)
-
-    print class1.threshhold
-    print class1.evaluate(myset[15][0])
-
+   
     # display_image(random.choice(tr,in_set))
     # indices = [
     #     'left_eye_outer_corner_x',
