@@ -60,7 +60,8 @@ class weakclass(object):
 		return positive / ((len(ar) - 1.) - stop) * 100
 
 
-
+# takes a set/list of weak classifiers and applies boosting to them, as described in the
+#	Viola-Jones paper (page 8)
 def boost_em_up(perceptrons, images, labels, T):
     perceptrons = deepcopy(perceptrons)
 
