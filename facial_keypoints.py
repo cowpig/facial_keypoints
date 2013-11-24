@@ -37,40 +37,6 @@ def load_train_set(filename):
 def to_matrix(line):
     assert(len(line) == 96 * 96)
     return np.reshape(line, (96, 96))
-
-# takes a matrix of pixel densities and outputs the integral image (as described
-#   in the viola-jones paper)
-def integral_matrix(m):
-    l, w = m.shape
-    out = np.zeros((l,w))
-    for i in xrange(l):
-        for j in xrange(w):
-            left = 0 if i == 0 else out[i-1,j]
-            up = 0 if j == 0 else out[i,j-1]
-            if i==0 or j==0:
-                up_and_left = 0
-            else:
-                up_and_left = out[i-1, j-1]
-            
-            out[i,j] = m[i,j] + left + up - up_and_left
-
-    return out 
-
-# takes an integral image matrix, and the top-left and bottom-right points,
-#   and returns the sum of the sub-image's pixels
-def get_rect(m, top_left, bot_right):
-    top, left = top_left
-    bot, right = bot_right
-    # this is so that a rect from (0,0) to (1,1) is not zero.
-    top -= 1
-    left -= 1
-    return mget(m, top, left) + mget(m, bot, right) - mget(m, top, right) - mget(m, bot, left)
-
-# helper function for feature functions
-def mget(m, row, col):
-    if (row == -1) or (col == -1):
-        return 0
-    return m[row, col]
     
 # takes an image and displays it
 def display_image(img):
@@ -155,20 +121,20 @@ def resize(img, size):
 
 def get_subimage(img, top_left, bot_right):
     top, left = top_left
-    bot_right = bot_right
-    return img[top:bot, left:right]
+    bot, right = bot_right
+    return img[top:bot+1, left:right+1]
 
 
 
-# if __name__ == "__main__":
-#     train_set, labels, label_names = load_train_set("data/training.csv")
-#     display_image(random.choice(train_set))
-#     indices = [
-#         'left_eye_outer_corner_x',
-#         'left_eye_outer_corner_y',
-#         'left_eye_inner_corner_x',
-#         'left_eye_inner_corner_y'
-#     ]
-#     import pprint
-#     pprint.pprint(stats(labels, label_names, indices))
-#     tests() 
+if __name__ == "__main__":
+    train_set, labels, label_names = load_train_set("data/training.csv")
+    display_image(random.choice(train_set))
+    indices = [
+        'left_eye_outer_corner_x',
+        'left_eye_outer_corner_y',
+        'left_eye_inner_corner_x',
+        'left_eye_inner_corner_y'
+    ]
+    import pprint
+    pprint.pprint(stats(labels, label_names, indices))
+    tests() 

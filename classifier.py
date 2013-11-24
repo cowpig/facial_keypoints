@@ -120,7 +120,7 @@ def feature_a(m, top_left, bot_right):
 # The top/bottom 2-rectangle feature. 
 def feature_b(m, top_left, bot_right):
     top, left = top_left
-    bot_right = bot_right
+    bot, right = bot_right
 
     mid_t = np.floor((top+bot)/2.)
     mid_b = np.ceil((top+bot)/2.)
@@ -130,7 +130,7 @@ def feature_b(m, top_left, bot_right):
 # The 3-rectangle feature. 
 def feature_c(m, top_left, bot_right):
     top, left = top_left
-    bot_right = bot_right
+    bot, right = bot_right
 
     midleft_l = np.floor((left+right)/3.)
     midleft_r = np.ceil((left+right)/3.)
@@ -146,7 +146,7 @@ def feature_c(m, top_left, bot_right):
 # The 4-rectangle feature. 
 def feature_d(m, top_left, bot_right):
     top, left = top_left
-    bot_right = bot_right
+    bot, right = bot_right
 
     mid_t = np.floor((top+bot)/2.)
     mid_b = np.ceil((top+bot)/2.)
@@ -179,8 +179,8 @@ def get_all_feature_coords(matrix_size):
 		for left in xrange(matrix_size[1]):
 			for bot in xrange(top, matrix_size[0]):
 				for right in xrange(left, matrix_size[1]):
-					row_dist = bot - top
-					col_dist = right - left
+					row_dist = bot - top + 1
+					col_dist = right - left + 1
 
 					if (min_size_a[0] <= row_dist 
 								and min_size_a[1] <= col_dist
@@ -207,3 +207,38 @@ def get_all_feature_coords(matrix_size):
 						feat_coords['d'].add(((top, left), (bot, right)))
 
 	return feat_coords
+
+
+# takes a matrix of pixel densities and outputs the integral image (as described
+#   in the viola-jones paper)
+def integral_matrix(m):
+    l, w = m.shape
+    out = np.zeros((l,w))
+    for i in xrange(l):
+        for j in xrange(w):
+            left = 0 if i == 0 else out[i-1,j]
+            up = 0 if j == 0 else out[i,j-1]
+            if i==0 or j==0:
+                up_and_left = 0
+            else:
+                up_and_left = out[i-1, j-1]
+            
+            out[i,j] = m[i,j] + left + up - up_and_left
+
+    return out 
+
+# takes an integral image matrix, and the top-left and bottom-right points,
+#   and returns the sum of the sub-image's pixels
+def get_rect(m, top_left, bot_right):
+    top, left = top_left
+    bot, right = bot_right
+    # this is so that a rect from (0,0) to (1,1) is not zero.
+    top -= 1
+    left -= 1
+    return mget(m, top, left) + mget(m, bot, right) - mget(m, top, right) - mget(m, bot, left)
+
+# helper function for feature functions
+def mget(m, row, col):
+    if (row == -1) or (col == -1):
+        return 0
+    return m[row, col]
