@@ -1,6 +1,7 @@
 import numpy as np
+from copy import deepcopy
 
-class weakclass(object):
+class WeakClass(object):
 	def __init__(self, ftype, top_left, bot_right):
 		self.ftype = ftype
 		self.top_left = top_left
@@ -34,11 +35,14 @@ class weakclass(object):
 		except:
 			import pdb; pdb.set_trace()
 	
-	#train the weak classifier		
+	#train the weak classifier      
 	def train(self, imgs):
 		result = []
 		for pic in imgs:
-			result.append((self.ftype(pic[0], self.top_left, self.bot_right), pic[1]))
+			try:
+				result.append((self.ftype(pic[0], self.top_left, self.bot_right), pic[1]))
+			except:
+				import pdb;pdb.set_trace()
 
 
 		result = sorted(result)
@@ -64,17 +68,19 @@ class weakclass(object):
 		else:
 			self.parity = -1 
 
-		print result
-		print self.parity
-		print "average = " + str(self.threshhold)
-		print "before = " + str(before)
-		print "after = " + str(after)
+		# print result
+		# print self.parity
+		# print "average = " + str(self.threshhold)
+		# print "before = " + str(before)
+		# print "after = " + str(after)
 
 
 
 # takes a set/list of weak classifiers and applies boosting to them, as described in the
-#	Viola-Jones paper (page 8)
-def boost_em_up(perceptrons, images, labels, T):
+#   Viola-Jones paper (page 8)
+def boost_em_up(perceptrons, trainset, T):
+	images, labels = zip(*trainset)
+
 	perceptrons = deepcopy(perceptrons)
 
 	labels = np.array([int(label) for label in labels])
@@ -89,7 +95,7 @@ def boost_em_up(perceptrons, images, labels, T):
 
 	evals = {}
 	for perceptron in perceptrons:
-		evals[perceptron] = np.abs(labels - np.array([perceptron.eval(iimg) for iimg in integrals])) 
+		evals[perceptron] = np.abs(labels - np.array([perceptron.evaluate(iimg) for iimg in integrals])) 
 
 	weights = []
 	for l in labels:
@@ -103,9 +109,11 @@ def boost_em_up(perceptrons, images, labels, T):
 	boost_selection = []
 
 	for t in xrange(T):
-		best_percep = (perceptrons[0], np.dot(evals[perceptrons[0]] * weights))
+		print "getting classifier {}".format(t)
+
+		best_percep = (perceptrons[0], np.dot(evals[perceptrons[0]], weights))
 		for perceptron in perceptrons[1:]:
-			error = np.dot(evals[perceptron] * weights)
+			error = np.dot(evals[perceptron], weights)
 			if error < best_percep[1]:
 				best_percep = (perceptron, error)
 
@@ -115,7 +123,7 @@ def boost_em_up(perceptrons, images, labels, T):
 		beta = (err/(1-err))
 		weights = weights * beta ** 1 - evals[percep]
 		
-		boost_selection.append(percep, np.log(1/beta))
+		boost_selection.append((percep, np.log(1/beta)))
 
 	return boost_selection
 
@@ -220,6 +228,10 @@ def get_all_feature_coords(matrix_size):
 						feat_coords['d'].add(((top, left), (bot, right)))
 
 	return feat_coords
+
+def feature_number(matrix_size):
+	fc = get_all_feature_coords(matrix_size)
+	return sum([len(fc[key]) for key in fc])
 
 
 # takes a matrix of pixel densities and outputs the integral image (as described
