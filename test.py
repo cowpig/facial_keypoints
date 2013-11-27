@@ -55,7 +55,8 @@ boost_selection = []
 T = 500
 
 for t in xrange(T):
-	print "getting classifier {}".format(t)
+	if t % 10 == 0:
+		print "getting classifier {}".format(t)
 	weights = weights / sum(weights)
 	best_percep = (None, 999999999999999999999999.9)
 	for perceptron in perceptrons:

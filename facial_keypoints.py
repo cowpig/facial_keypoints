@@ -371,7 +371,7 @@ def build_eye_classifier(train_set, labels):
 # 	pprint.pprint(stats(labels, label_names, indices))
 # 	tests() 
 
-if __name__ == "__main__":
-	train_set, labels, label_names = load_train_set("data/training.csv")
-	weakies = build_eye_classifier(train_set, labels)
-	boooosted = boost_em_up(weakies, passable_eyes, 100)
+# if __name__ == "__main__":
+# 	train_set, labels, label_names = load_train_set("data/training.csv")
+# 	weakies = build_eye_classifier(train_set, labels)
+# 	boooosted = boost_em_up(weakies, passable_eyes, 100)
