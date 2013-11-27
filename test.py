@@ -52,7 +52,7 @@ weights = np.array(weights)
 perceptrons = set(weak_classifiers)
 
 boost_selection = []
-T = 200
+T = 500
 
 for t in xrange(T):
 	print "getting classifier {}".format(t)
@@ -69,3 +69,7 @@ for t in xrange(T):
 	beta = (err/(1-err))
 	weights = weights * beta ** (1 - evals[percep])
 	boost_selection.append((percep, np.log(1./beta)))
+
+import cPickle
+with open("classifiers.pkl", "wb") as f:
+	cPickle.dump(boost_selection, f)
