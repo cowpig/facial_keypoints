@@ -1,0 +1,263 @@
+import numpy as np
+
+class SecondClass(Object):
+
+	def __init__(self):
+
+	def train_all(train_set, labels):
+		train_eye_inner(train_set, labels)
+		train_eye_center(train_set, labels)
+		train_eye_outer(train_set, labels)
+		train_eyebrow_outer(train_set, labels)
+		train_eyebrow_inner(train_set, labels)
+		train_nose_tip(train_set, labels)
+		train_mouth_right_corner(train_set, lanels)
+		train_mouth_left_corner(train_set, labels)
+		train_mouth_center_top(train_set, labels)
+		train_mouth_center_bottom(train_set, labels)
+
+	def train_eye_inner(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][4])
+			y = np.round(labels[i][5])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.eye_inner = np.average(result, axis = 0)
+
+
+	def train_eye_center(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][0])
+			y = np.round(labels[i][1])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.eye_center = np.average(result, axis = 0)
+
+	def train_eye_outer(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][6])
+			y = np.round(labels[i][7])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.eye_outer = np.average(result, axis = 0)
+
+	def train_eyebrow_outer(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][14])
+			y = np.round(labels[i][15])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.eyebrow_outer = np.average(result, axis = 0)
+
+	def train_eyebrow_inner(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][12])
+			y = np.round(labels[i][13])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.eyebrow_inner = np.average(result, axis = 0)
+
+	def train_nose_tip(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][20])
+			y = np.round(labels[i][21])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.nose_tip = np.average(result, axis = 0)
+
+	def train_mouth_right_corner(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][24])
+			y = np.round(labels[i][25])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.mouth_right_corner = np.average(result, axis = 0)
+
+	def train_mouth_left_corner(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][22])
+			y = np.round(labels[i][23])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.mouth_left_corner = np.average(result, axis = 0)
+
+	def train_mouth_center_top(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][26])
+			y = np.round(labels[i][27])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.mouth_cener_top = np.average(result, axis = 0)
+
+	def train_mouth_center_bottom(train_set, labels):
+
+		result = []
+		for i, pic in enumerate(train_set):
+			x = np.round(labels[i][28])
+			y = np.round(labels[i][29])
+
+			result.append(get_eight_neghbor(pic, x, y))
+
+		self.mouth_center_bottom = np.average(result, axis = 0)
+
+	def find_eye_inner(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.eye_inner)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.eye_inner)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_eye_center(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.eye_center)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.eye_center)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_eye_outer(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.eye_outer)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.eye_outer)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_eyebrow_outer(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.eyebrow_outer)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.eyebrow_outer)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_eyebrow_inner(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.eyebrow_inner)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.eyebrow_inner)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_nose_tip(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.nose_tip)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.nose_tip)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_mouth_right_corner(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.mouth_right_corner)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.mouth_right_corner)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_mouth_left_corner(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.mouth_left_corner)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.mouth_left_corner)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_mouth_center_top(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.mouth_cener_top)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.mouth_cener_top)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def find_mouth_center_bottom(img):
+
+		min_dist_coords = (1,1)
+		min_distance = np.linalg.norm(get_eight_neghbor(img, 1, 1) - self.mouth_center_bottom)
+		for i in range(1, len(img) - 1):
+			for j in range(1, len(img[i]) - 1):
+				new_dist = np.linalg.norm(get_eight_neighbor(img, j, i) - self.mouth_center_bottom)
+				if new_dist < min_dist:
+					min_dist = new_dist
+					min_dist_coords = (j,i)
+
+		return min_dist_coords
+
+	def get_eight_neghbor(img, x, y):
+		return (pic[y + 1][x - 1], pic[y + 1][x], pic[y + 1][x + 1], 
+					pic[y][x - 1], pic[y][x]), pic[y][x + 1], 
+					pic[y - 1][x - 1], pic[y + 1][x], pic[y - 1][x + 1])
