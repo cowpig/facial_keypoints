@@ -41,7 +41,7 @@ class WeakClass(object):
 		for pic in imgs:
 			try:
 				result.append((self.ftype(pic[0], self.top_left, self.bot_right), pic[1]))
-			except:
+			except Exception as e:
 				import pdb;pdb.set_trace()
 
 
