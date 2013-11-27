@@ -25,6 +25,13 @@ mouth_right_corner = (24, 25)
 mouth_center_top_lip = (26, 27)
 mouth_center_bottom_lip = (28, 29)
 
+feature_dict = {
+	'a' : feature_a,
+	'b' : feature_b,
+	'c' : feature_c,
+	'd' : feature_d
+}
+
 
 def str_to_float(string):
 	if string == '':
@@ -126,6 +133,7 @@ def stats(labels, label_names, labels_to_check):
 	}
 
 def tests():
+	# test feaures, integral matrix
 	test = np.ones((8,8))
 	i_test = integral_matrix(test)
 
@@ -145,6 +153,21 @@ def tests():
 		assert(feature_d(i_test, top_left, bot_right) == 0)
 	except:
 		import pdb; pdb.set_trace
+
+
+	# test Classifiers
+
+	fakemat_l = np.mat([[1, 1, 0, 0], [1, 1, 0, 0]])
+	fakemat_r = np.mat([[0, 0, 1, 1], [0, 0, 1, 1]])
+	dataset = [integral_matrix(fakemat_r)] * 25 + [integral_matrix(fakemat_l)] * 175
+	labels = [1] * 25 + [0] * 175
+	tl = (0,0)
+	br = (1,3)
+	weakie = WeakClass(feature_a, tl, br)
+	weakie.train(zip(dataset, labels))
+
+	assert(weakie.evaluate(integral_matrix(fakemat_r)) == 1)
+	assert(weakie.evaluate(integral_matrix(fakemat_l)) == 0)
 
 	print "pass"
 
@@ -256,17 +279,17 @@ def build_eye_trainset(train_set, labels):
 			tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
 			br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
 
-		while too_close(tl, tl_l, tl_r) or too_close(br, br_l, br_r):
-			tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
-			br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
+			while too_close(tl, tl_l, tl_r) or too_close(br, br_l, br_r):
+				tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
+				br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
 
 			eyes.append((get_subimage(train_set[i], tl, br), 0, i))
 
 	return eyes
 
 def build_eye_classifier(train_set, labels):
-	eyes = build_eye_trainset(train_set, labels)[:400]
-	passable_eyes = [(eye[0], eye[1]) for eye in eyes]
+	eyes = build_eye_trainset(train_set, labels)
+	eyeset = [(eye[0], eye[1]) for eye in eyes[:400]]
 	features_we_need = get_all_feature_coords((18, 24))
 
 	classifiers = []
@@ -276,7 +299,7 @@ def build_eye_classifier(train_set, labels):
 			print "{} weakies pumped out".format(i)
 
 		weak = WeakClass(feature_d, *feature_coord)
-		weak.train(passable_eyes)
+		weak.train(eyeset)
 		classifiers.append(weak)
 
 	return classifiers
@@ -334,7 +357,7 @@ def build_eye_classifier(train_set, labels):
 
 # 	class1.train(myset)
 
-# 	print class1.threshhold
+# 	print class1.threshold
 # 	print class1.evaluate(myset[15][0])
 
 # 	display_image(random.choice(tr,in_set))

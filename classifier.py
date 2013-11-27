@@ -6,11 +6,11 @@ class WeakClass(object):
 		self.ftype = ftype
 		self.top_left = top_left
 		self.bot_right = bot_right
-		self.threshhold = None
+		self.threshold = None
 		self.parity = None
 
 	def evaluate(self, img):
-		if self.parity * self.ftype(img, self.top_left, self.bot_right) < self.parity * self.threshhold:
+		if self.parity * self.ftype(img, self.top_left, self.bot_right) < self.parity * self.threshold:
 			return 1
 		else:
 			return 0
@@ -51,11 +51,11 @@ class WeakClass(object):
 		for i in result:
 			summ += i[0]
 
-		self.threshhold = summ / len(result)
+		self.threshold = summ / len(result)
 
 
 		for i, r in enumerate(result):
-			if r[0] > self.threshhold:
+			if r[0] > self.threshold:
 				threshindex = i
 				break
 
@@ -70,7 +70,7 @@ class WeakClass(object):
 
 		# print result
 		# print self.parity
-		# print "average = " + str(self.threshhold)
+		# print "average = " + str(self.threshold)
 		# print "before = " + str(before)
 		# print "after = " + str(after)
 
@@ -78,41 +78,45 @@ class WeakClass(object):
 
 # takes a set/list of weak classifiers and applies boosting to them, as described in the
 #   Viola-Jones paper (page 8)
-def boost_em_up(perceptrons, trainset, T):
-	images, labels = zip(*trainset)
+def boost_em_up(weak_classifiers, trainset, T):
+	imgs, lbls = zip(*eyeset2)
 
-	perceptrons = deepcopy(perceptrons)
+	perceptrons = set(weak_classifiers)
 
-	labels = np.array([int(label) for label in labels])
+	lbls = np.array([int(label) for label in lbls])
 
 	integrals = []
-	for image in images:
+	for image in imgs:
 		integrals.append(integral_matrix(image))
 
-	positives = sum(labels)
-	n = len(images)
+	positives = sum(lbls)
+	n = len(imgs)
 	negatives = n - positives
 
+	# evals is a bit of a misnomer here
+	#	it's really a vector of which examples the classifier got right
 	evals = {}
 	for perceptron in perceptrons:
-		evals[perceptron] = np.abs(labels - np.array([perceptron.evaluate(iimg) for iimg in integrals])) 
+		evals[perceptron] = np.abs(lbls - np.array([perceptron.evaluate(iimg) for iimg in integrals])) 
 
 	weights = []
-	for l in labels:
+	for l in lbls:
 		if l:
-			weights.append(1/(2*positives))
+			weights.append(1./(2*positives))
 		else:
-			weights.append(1/(2*negatives))
+			weights.append(1./(2*negatives))
 
 	weights = np.array(weights)
+	perceptrons = set(weak_classifiers)
 
 	boost_selection = []
+	# T = 20
 
 	for t in xrange(T):
 		print "getting classifier {}".format(t)
-
-		best_percep = (perceptrons[0], np.dot(evals[perceptrons[0]], weights))
-		for perceptron in perceptrons[1:]:
+		weights = weights / sum(weights)
+		best_percep = (None, 999999999999999999999999.9)
+		for perceptron in perceptrons:
 			error = np.dot(evals[perceptron], weights)
 			if error < best_percep[1]:
 				best_percep = (perceptron, error)
@@ -121,11 +125,8 @@ def boost_em_up(perceptrons, trainset, T):
 		perceptrons.remove(percep)
 
 		beta = (err/(1-err))
-		weights = weights * beta ** 1 - evals[percep]
-		
-		boost_selection.append((percep, np.log(1/beta)))
-
-	return boost_selection
+		weights = weights * beta ** (1 - evals[percep])
+		boost_selection.append((percep, np.log(1./beta)))
 
 
 # The right/left 2-rectangle feature. 
