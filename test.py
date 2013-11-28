@@ -3,7 +3,11 @@ execfile("facial_keypoints.py")
 train_set, labels, label_names = load_train_set("data/training.csv")
 
 eyes = build_eye_trainset(train_set, labels)
-eyeset = [(eye[0], eye[1]) for eye in eyes[:1000]]
+
+with open("eyes_dataset.pkl", "wb") as f:
+	cPickle.dump(eyes, f)
+
+eyeset = [(integral_matrix(eye[0]), eye[1]) for eye in eyes[:1000]]
 
 weak_classifiers = []
 features_we_need = get_all_feature_coords((18, 24))
@@ -18,18 +22,18 @@ for featname in ['a', 'b', 'c', 'd']:
 		weak_classifiers.append(weak)
 
 
+with open("eyes_feat_coords.pkl", "wb") as f:
+	cPickle.dump(features_we_need, f)
 
+with open("weak_classes_1ktrain.pkl", "wb") as f:
+	cPickle.dump(weak_classifiers, f)
 
-eyeset2 = [(eye[0], eye[1]) for eye in eyes[1000:2000]]
+eyeset2 = [(integral_matrix(eye[0]), eye[1]) for eye in eyes[1000:2000]]
 imgs, lbls = zip(*eyeset2)
 
 perceptrons = set(weak_classifiers)
 
 lbls = np.array([int(label) for label in lbls])
-
-integrals = []
-for image in imgs:
-	integrals.append(integral_matrix(image))
 
 positives = sum(lbls)
 n = len(imgs)
@@ -39,7 +43,7 @@ negatives = n - positives
 #	it's really a vector of which examples the classifier got right
 evals = {}
 for perceptron in perceptrons:
-	evals[perceptron] = np.abs(lbls - np.array([perceptron.evaluate(iimg) for iimg in integrals])) 
+	evals[perceptron] = np.abs(lbls - np.array([perceptron.evaluate(img) for img in imgs])) 
 
 weights = []
 for l in lbls:
@@ -52,7 +56,7 @@ weights = np.array(weights)
 perceptrons = set(weak_classifiers)
 
 boost_selection = []
-T = 500
+T = 400
 
 for t in xrange(T):
 	if t % 10 == 0:
@@ -74,3 +78,13 @@ for t in xrange(T):
 import cPickle
 with open("classifiers.pkl", "wb") as f:
 	cPickle.dump(boost_selection, f)
+
+test_set = eyes[2000:3000]
+classifier = StrongClassifier(boost_selection)
+
+scored_set = []
+
+for img, lbl, i in test_set:
+	score = classifier.score(integral_matrix(img))
+	scored_set.append(img, lbl, score, (score >= 0.5))
+

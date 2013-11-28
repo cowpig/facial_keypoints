@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from random import randint
 from classifier import *
 from scipy import ndimage
+import cPickle
 
 
 # literals that are specific to our dataset
@@ -32,7 +33,6 @@ feature_dict = {
 	'd' : feature_d
 }
 
-
 def str_to_float(string):
 	if string == '':
 		return None
@@ -53,8 +53,9 @@ def load_train_set(filename):
 
 		for i, line in enumerate(r):
 			try:
-				labels.append([str_to_float(s) for s in line[:-1]])
-				train_set.append([float(s) for s in line[-1].split(' ')])
+				if i not in bad_images:
+					labels.append([str_to_float(s) for s in line[:-1]])
+					train_set.append([float(s) for s in line[-1].split(' ')])
 			except:
 				import pdb; pdb.set_trace() # loads up python debugger
 			# if i > 50:
@@ -211,6 +212,10 @@ def flip_horizontal(matrix):
 	return matrix[...,::-1]
 
 def build_eye_trainset(train_set, labels):
+	to_shuffle = zip(train_set, labels)
+	np.random.shuffle(to_shuffle)
+	train_set, labels = zip(*to_shuffle)
+
 	TOO_CLOSE_VALUE = 9.
 	EYE_WIDTH = 24
 	EYE_HEIGHT = 18
@@ -229,8 +234,8 @@ def build_eye_trainset(train_set, labels):
 
 			padding = (EYE_WIDTH - (right - left))
 
-			left = left - padding
-			right = right + padding
+			left = left - padding/2.
+			right = right + padding/2.
 			top = middle - EYE_HEIGHT/2.
 			bot = middle + EYE_HEIGHT/2.
 
@@ -251,8 +256,8 @@ def build_eye_trainset(train_set, labels):
 
 			padding = (EYE_WIDTH - (right - left))
 
-			left = left - padding
-			right = right + padding
+			left = left - padding/2.
+			right = right + padding/2.
 			top = middle - EYE_HEIGHT/2.
 			bot = middle + EYE_HEIGHT/2.
 

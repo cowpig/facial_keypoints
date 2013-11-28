@@ -74,6 +74,20 @@ class WeakClass(object):
 		# print "before = " + str(before)
 		# print "after = " + str(after)
 
+class StrongClassifier(object):
+	def __init__(self, classifiers):
+		self.beta_sum = sum([c[1] for c in classifiers])
+		self.classifiers = classifiers
+
+	def score(self, img):
+		score = 0
+		for clas, beta in self.classifiers:
+			score += clas.evaluate(img) * beta
+
+		return score / self.beta_sum
+
+	def evaluate(self, img):
+		return self.score(img) >= 0.5
 
 
 # takes a set/list of weak classifiers and applies boosting to them, as described in the
@@ -154,10 +168,10 @@ def feature_c(m, top_left, bot_right):
 	top, left = top_left
 	bot, right = bot_right
 
-	midleft_l = np.floor((left+right)/3.)
-	midleft_r = np.ceil((left+right)/3.)
-	midright_l = np.floor(2.*(left+right)/2.)
-	midright_r = np.ceil((2.*left+right)/2.)
+	midleft_l = np.floor(left + (right-left)/3.)
+	midleft_r = np.ceil(left + (right-left)/3.)
+	midright_l = np.floor(left + 2*(right-left)/3.)
+	midright_r = np.ceil(left + 2*(right-left)/3.)
 
 	left_rect = get_rect(m, top_left, (bot, midleft_l))
 	mid_rect = get_rect(m, (top, midleft_r), (bot, midright_l))
@@ -192,7 +206,7 @@ def get_all_feature_coords(matrix_size):
 	min_size_b = (2,1)
 	
 	feat_coords['c'] = set()
-	min_size_c = (1,3)
+	min_size_c = (3,1)
 	
 	feat_coords['d'] = set()
 	min_size_d = (2,2)
