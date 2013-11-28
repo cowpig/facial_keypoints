@@ -306,6 +306,9 @@ def build_eye_classifier(train_set, labels):
 	return classifiers
 
 def eye_scores(img, strongclas):
+	if  len(img) == 96*96:
+		img = to_matrix(img)
+
 	top = 0
 	left = 0
 	bot = EYE_HEIGHT
@@ -322,23 +325,118 @@ def eye_scores(img, strongclas):
 
 	while True:
 		while True:
-			frame = get_subimage(img, (top, left), (bot_right))
-			flipframe = flip_horizontal(frame)
-			for p in precisions:
-				score_l = strongclas.score(integral_matrix(frame), p)
-				score_r = strongclas.score(integral_matrix(flipframe), p)
+			try:
+				frame = get_subimage(img, (top, left), (bot, right))
+				flipframe = flip_horizontal(frame)
+				for p in precisions:
+					score_l = strongclas.score(integral_matrix(frame), p)
+					score_r = strongclas.score(integral_matrix(flipframe), p)
 
-				scores['left'][p].append((top, left), (bot, right), score_l)
-				scores['right'][p].append((top, left), (bot, right), score_r)
+					scores['left'][p].append(((top, left), (bot, right), score_l))
+					scores['right'][p].append(((top, left), (bot, right), score_r))
+			except Exception as e:
+				import pdb; pdb.set_trace()
 
 			left += np.ceil(TOO_CLOSE_VALUE/2.)
-			if left > width:
+			right += np.ceil(TOO_CLOSE_VALUE/2.)
+			if right > width:
+				# print "{}r > {}w".format(right, width)
 				break
 		top += np.ceil(TOO_CLOSE_VALUE/2.)
-		if top > height:
+		bot += np.ceil(TOO_CLOSE_VALUE/2.)
+		if bot > height:
+			# print "{}b > {}h".format(bot, height)
+			break
+		left = 0
+		right = EYE_WIDTH
+
+	print "image scoring complete"
+	return scores
+
+def cascade(img, strongclas):
+	if len(img) == 96*96:
+		img = to_matrix(img)
+
+	img = integral_matrix(img)
+
+	top = 0
+	left = 0
+	bot = EYE_HEIGHT
+	right = EYE_WIDTH
+
+	height, width = np.shape(img)
+
+	potential_r = []
+	potential_l = []
+
+	while True:
+		while True:
+			frame = get_subimage(img, (top, left), (bot, right))
+			flipframe = flip_horizontal(frame)
+			# print np.shape(frame)
+			# print np.shape(flipframe)
+			score_l = strongclas.score(frame, 10)
+			score_r = strongclas.score(flipframe, 10)
+			# print score_l
+			# print score_r
+			
+			potential_l.append((score_l, (top, left), (bot, right)))
+
+			potential_r.append((score_r, (top, left), (bot, right)))
+
+			left += np.ceil(TOO_CLOSE_VALUE/3.)
+			right += np.ceil(TOO_CLOSE_VALUE/3.)
+			if right > width:
+				break
+		top += np.ceil(TOO_CLOSE_VALUE/3.)
+		bot += np.ceil(TOO_CLOSE_VALUE/3.)
+		if bot > height:
 			break
 
-	return scores
+		left = 0
+		right = EYE_WIDTH
+
+	potential_l = sorted(potential_l, key=lambda x: -x[0])[:50]
+	potential_l = [(strongclas.score(get_subimage(img, tl, br), 200), tl, br) for score, tl, br in potential_l]
+	potential_l = sorted(potential_l, key=lambda x: -x[0])[:10]
+
+
+	potential_r = sorted(potential_r, key=lambda x: -x[0])[:50]
+	potential_r = [(strongclas.score(get_subimage(img, tl, br), 200), tl, br) for score, tl, br in potential_r]
+	potential_r = sorted(potential_r, key=lambda x: -x[0])[:10]
+
+
+	potential_l = [(strongclas.score(get_subimage(img, tl, br), 400), tl, br) for score, tl, br in potential_l]
+	potential_r = [(strongclas.score(get_subimage(img, tl, br), 400), tl, br) for score, tl, br in potential_r]
+
+	left = potential_l[0]
+	right = potential_r[0]
+
+	return ((left[1], left[2]), (right[1], right[2]), left[0] + right[0])
+	# pairs = []
+
+	# # import pdb; pdb.set_trace()
+
+	# for score, tl_l, br_l in potential_l:
+	# 	for score, tl_r, br_r in potential_r:
+	# 		if (tl_l[1] > tl_r[1]) and (euclidean_distance(tl_l, tl_r) > TOO_CLOSE_VALUE):
+	# 			frame_l = get_subimage(img, tl_l, br_l)
+	# 			frame_r = get_subimage(img, tl_r, br_r)
+	# 			pairs.append(((tl_l, br_l, frame_l), (tl_r, br_r, frame_r)))
+	# 		else:
+	# 			# import pdb; pdb.set_trace()
+	# 			pass
+
+	# print len(pairs)
+
+	# maximum = (None, None, 0.0)
+	# for pair in pairs:
+	# 	# import pdb; pdb.set_trace()
+	# 	pair_score = strongclas.score(pair[0][2]) + strongclas.score(pair[1][2])
+	# 	if pair_score > maximum[2]:
+	# 		maximum = (pair[0][:2], pair[1][:2], pair_score)
+
+	# return maximum
 
 	# max_dist_horizontal = 0
 	# max_dist_vertical = 0

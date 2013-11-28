@@ -28,7 +28,20 @@ with open("eyes_feat_coords.pkl", "wb") as f:
 with open("weak_classes_1ktrain.pkl", "wb") as f:
 	cPickle.dump(weak_classifiers, f)
 
-eyeset2 = [(integral_matrix(eye[0]), eye[1]) for eye in eyes[1000:2000]]
+with open("weak_classes_1ktrain.pkl", "rb") as f:
+	weak_classifiers = cPickle.load(f)
+
+with open("eyes_dataset.pkl", "rb") as f:
+	eyes = cPickle.load(f)
+
+eyeset2 = []
+for eye in eyes[1000:]:
+	if np.shape(eye[0]) == (19,25):
+		eyeset2.append((eye[0], eye[1]))
+	if len(eyeset2) == 1000:
+		break
+
+# eyeset2 = [(integral_matrix(eye[0]), eye[1]) for eye in eyes[1000:2000]]
 imgs, lbls = zip(*eyeset2)
 
 perceptrons = set(weak_classifiers)
@@ -79,6 +92,8 @@ import cPickle
 with open("classifiers.pkl", "wb") as f:
 	cPickle.dump(boost_selection, f)
 
+
+
 test_set = eyes[2000:3000]
 classifier = StrongClassifier(boost_selection)
 
@@ -88,6 +103,52 @@ for img, lbl, i in test_set:
 	score = classifier.score(integral_matrix(img))
 	scored_set.append((img, lbl, score, (score >= 0.5)))
 
-test_imgs = eyes[3000:3050]
 
-test_scores = [eye_scores(img) for img, lbl, i in test_imgs]
+############################################
+with open("eyes_feat_coords.pkl", "rb") as f:
+	features_we_need = cPickle.load(f)
+
+with open("weak_classes_1ktrain.pkl", "rb") as f:
+	weak_classifiers = cPickle.load(f)
+
+with open("classifiers.pkl", "wb") as f:
+	boost_selection = cPickle.dump(f)
+
+############################################
+execfile("facial_keypoints.py")
+
+# train_set, labels, label_names = load_train_set("data/training.csv")
+
+
+# train_w_labels = []
+# for img, lbl in zip(train_set, labels):
+# 	good = True
+# 	for i in lbl[:12]:
+# 		if i == None:
+# 			good = False
+
+# 	if good:
+# 		train_w_labels.append((img, lbl))
+
+# test_imgs = random.sample(train_w_labels, 20)
+# test_scores = [eye_scores(to_matrix(img), classifier) for img, lbl in test_imgs]
+
+with open("classifiers.pkl", "rb") as f:
+	boost_selection = cPickle.load(f)
+
+classifier = StrongClassifier(boost_selection)
+
+with open("show.pkl", "rb") as f:
+    test_imgs = cPickle.dump(f)
+
+
+for i, thing in enumerate(test_imgs[:4]):
+	img, lbl = thing
+	eyes = cascade(img, classifier)
+	print eyes
+	print 
+	display_image(img)
+	display_image(get_subimage(img, eyes[1][0], eyes[1][1]))
+	display_image(get_subimage(img, eyes[0][0], eyes[0][1]))
+
+# eyes = cascade(test_imgs[1][0], classifier)
