@@ -216,10 +216,6 @@ def build_eye_trainset(train_set, labels):
 	np.random.shuffle(to_shuffle)
 	train_set, labels = zip(*to_shuffle)
 
-	TOO_CLOSE_VALUE = 9.
-	EYE_WIDTH = 24
-	EYE_HEIGHT = 18
-
 	eyes = []
 
 	for i, label in enumerate(labels):
@@ -309,6 +305,40 @@ def build_eye_classifier(train_set, labels):
 
 	return classifiers
 
+def eye_scores(img, strongclas):
+	top = 0
+	left = 0
+	bot = EYE_HEIGHT
+	right = EYE_WIDTH
+
+	height, width = np.shape(img)
+
+	precisions = [10, 50, 400]
+
+	scores = {'left' : {}, 'right': {}}
+	for side in scores:
+		for p in precisions:
+			scores[side][p] = []
+
+	while True:
+		while True:
+			frame = get_subimage(img, (top, left), (bot_right))
+			flipframe = flip_horizontal(frame)
+			for p in precisions:
+				score_l = strongclas.score(integral_matrix(frame), p)
+				score_r = strongclas.score(integral_matrix(flipframe), p)
+
+				scores['left'][p].append((top, left), (bot, right), score_l)
+				scores['right'][p].append((top, left), (bot, right), score_r)
+
+			left += np.ceil(TOO_CLOSE_VALUE/2.)
+			if left > width:
+				break
+		top += np.ceil(TOO_CLOSE_VALUE/2.)
+		if top > height:
+			break
+
+	return scores
 
 	# max_dist_horizontal = 0
 	# max_dist_vertical = 0

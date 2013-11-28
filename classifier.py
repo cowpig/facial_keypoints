@@ -1,6 +1,10 @@
 import numpy as np
 from copy import deepcopy
 
+TOO_CLOSE_VALUE = 9.
+EYE_WIDTH = 24
+EYE_HEIGHT = 18
+
 class WeakClass(object):
 	def __init__(self, ftype, top_left, bot_right):
 		self.ftype = ftype
@@ -76,17 +80,21 @@ class WeakClass(object):
 
 class StrongClassifier(object):
 	def __init__(self, classifiers):
-		self.beta_sum = sum([c[1] for c in classifiers])
 		self.classifiers = classifiers
 
-	def score(self, img):
+	def score(self, img, up_to=None):
+		if up_to == None:
+			up_to = len(self.classifiers)
+
+		beta_sum = 0
 		score = 0
-		for clas, beta in self.classifiers:
+		for clas, beta in self.classifiers[:up_to]:
 			score += clas.evaluate(img) * beta
+			beta_sum += beta
 
-		return score / self.beta_sum
+		return score / beta_sum
 
-	def evaluate(self, img):
+	def evaluate(self, img, up_to=None):
 		return self.score(img) >= 0.5
 
 

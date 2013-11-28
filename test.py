@@ -86,5 +86,8 @@ scored_set = []
 
 for img, lbl, i in test_set:
 	score = classifier.score(integral_matrix(img))
-	scored_set.append(img, lbl, score, (score >= 0.5))
+	scored_set.append((img, lbl, score, (score >= 0.5)))
 
+test_imgs = eyes[3000:3050]
+
+test_scores = [eye_scores(img) for img, lbl, i in test_imgs]
