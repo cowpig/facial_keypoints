@@ -241,6 +241,9 @@ def build_eye_trainset(train_set, labels):
 			top = int(np.round(top))
 			bot = int(np.round(bot))
 
+			if (top - bot) < 24:
+				bot += 1
+
 			subimg = get_subimage(train_set[i], (top, left), (bot, right))
 			tl_l = (top, left)
 			br_l = (bot, right)
