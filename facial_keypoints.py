@@ -337,8 +337,8 @@ def build_mouth_trainset(train_set, labels):
 
 			subimg = get_subimage(train_set[i], (top, left), (bot, right))
 			tl_m = (top, left)
-			br_m = (bot, right)]
-			
+			br_m = (bot, right)
+
 			mouths.append((subimg, 1, i))
 
 			def random(x):
