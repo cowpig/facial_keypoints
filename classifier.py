@@ -4,6 +4,8 @@ from copy import deepcopy
 TOO_CLOSE_VALUE = 9.
 EYE_WIDTH = 24
 EYE_HEIGHT = 18
+MOUTH_WIDTH = 44
+MOUTH_HEIGHT = 22
 
 class WeakClass(object):
 	def __init__(self, ftype, top_left, bot_right):

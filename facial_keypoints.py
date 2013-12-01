@@ -5,25 +5,26 @@ from random import randint
 from classifier import *
 from scipy import ndimage
 import cPickle
+from scipy.misc import imresize
 
 
 # literals that are specific to our dataset
 bad_images = [1747, 1908]
 
-left_eye_center = (0, 1)
-right_eye_center = (2, 3)
-left_eye_inner = (4, 5)
-left_eye_outer = (6, 7)
-right_eye_inner = (8, 9)
-right_eye_outer = (10, 11)
-left_eyebrow_inner = (12, 13)
-left_eyebrow_outer = (14, 15)
-right_eyebrow_inner = (16, 17)
-right_eyebrow_outer = (18, 19)
-nose_tip = (20, 21)
-mouth_left_corner = (22, 23)
-mouth_right_corner = (24, 25)
-mouth_center_top_lip = (26, 27)
+left_eye_center      	= (0, 1)
+right_eye_center     	= (2, 3)
+left_eye_inner       	= (4, 5)
+left_eye_outer       	= (6, 7)
+right_eye_inner      	= (8, 9)
+right_eye_outer      	= (10, 11)
+left_eyebrow_inner   	= (12, 13)
+left_eyebrow_outer   	= (14, 15)
+right_eyebrow_inner  	= (16, 17)
+right_eyebrow_outer  	= (18, 19)
+nose_tip             	= (20, 21)
+mouth_left_corner    	= (22, 23)
+mouth_right_corner   	= (24, 25)
+mouth_center_top_lip 	= (26, 27)
 mouth_center_bottom_lip = (28, 29)
 
 feature_dict = {
@@ -212,9 +213,9 @@ def flip_horizontal(matrix):
 	return matrix[...,::-1]
 
 def build_eye_trainset(train_set, labels):
-	to_shuffle = zip(train_set, labels)
-	np.random.shuffle(to_shuffle)
-	train_set, labels = zip(*to_shuffle)
+	# to_shuffle = zip(train_set, labels)
+	# np.random.shuffle(to_shuffle)
+	# train_set, labels = zip(*to_shuffle)
 
 	eyes = []
 
@@ -284,70 +285,53 @@ def build_eye_trainset(train_set, labels):
 				tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
 				br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
 
-			eyes.append((get_subimage(train_set[i], tl, br), 0, i))
+			eyes.append((get_subimage(train_set[i], tl, br), 0))
 
 	return eyes
 
-	def build_mouth_trainset(train_set, labels):
-		to_shuffle = zip(train_set, labels)
-		np.random.shuffle(to_shuffle)
-		train_set, labels = zip(*to_shuffle)
+def build_mouth_trainset(train_set, labels):
+	to_shuffle = zip(train_set, labels)
+	np.random.shuffle(to_shuffle)
+	train_set, labels = zip(*to_shuffle)
 
-		mouth_left_corner = (22, 23)
-		mouth_right_corner = (24, 25)
-		mouth_center_top_lip = (26, 27)
-		mouth_center_bottom_lip = (28, 29)
+	mouth_left_corner = (22, 23)
+	mouth_right_corner = (24, 25)
+	mouth_center_top_lip = (26, 27)
+	mouth_center_bottom_lip = (28, 29)
 
-		mouths = []
+	mouths = []
+	distances = []
 
-		for i, label in enumerate(labels):
-			dist_h = label_distance(label, mouth_left_corner, mouth_right_corner)
-			dist_v = label_distance(label, mouth_center_top_lip, mouth_center_bottom_lip)
+	for i, label in enumerate(labels):
+		dist_h = label_distance(label, mouth_left_corner, mouth_right_corner)
+		dist_v = label_distance(label, mouth_center_top_lip, mouth_center_bottom_lip)
 
-			# add each eye image with a positive label
-			if dist_h_left_eye != 0 and dist_h_left_eye != None:
-				left = label[4]
-				right = label[6]
-				middle = np.average([label[5], label[7]])
+		# add each eye image with a positive label
+		if dist_h != 0 and dist_h != None and dist_v != 0 and dist_v != None and dist_h < 40:
+			left = label[24]
+			right = label[22]
+			top = label[27]
+			bot = label[29]
 
-				padding = (EYE_WIDTH - (right - left))
+			padding_h = (MOUTH_WIDTH - (right - left))
+			padding_v = (MOUTH_HEIGHT - (bot - top))
 
-				left = left - padding/2.
-				right = right + padding/2.
-				top = middle - EYE_HEIGHT/2.
-				bot = middle + EYE_HEIGHT/2.
+			# import pdb; pdb.set_trace()
 
-				left = int(np.round(left))
-				right = int(np.round(right))
-				top = int(np.round(top))
-				bot = int(np.round(bot))
+			left = left - padding_h/2.
+			right = right + padding_h/2.
+			top = top - padding_v/2.
+			bot = bot + padding_v/2.
 
-				subimg = get_subimage(train_set[i], (top, left), (bot, right))
-				tl_l = (top, left)
-				br_l = (bot, right)
-				eyes.append((subimg, 1, i))
+			left = int(np.round(left))
+			right = int(np.round(right))
+			top = int(np.round(top))
+			bot = int(np.round(bot))
 
-			if dist_h_right_eye != 0 and dist_h_right_eye != None:
-				left = label[10]
-				right = label[8]
-				middle = np.average([label[9], label[11]])
-
-				padding = (EYE_WIDTH - (right - left))
-
-				left = left - padding/2.
-				right = right + padding/2.
-				top = middle - EYE_HEIGHT/2.
-				bot = middle + EYE_HEIGHT/2.
-
-				left = int(np.round(left))
-				right = int(np.round(right))
-				top = int(np.round(top))
-				bot = int(np.round(bot))
-
-				subimg = get_subimage(train_set[i], (top, left), (bot, right))
-				tl_r = (top, left)
-				br_r = (bot, right)
-				eyes.append((flip_horizontal(subimg), 1, i))
+			subimg = get_subimage(train_set[i], (top, left), (bot, right))
+			tl_m = (top, left)
+			br_m = (bot, right)
+			mouths.append((subimg, 1, i))
 
 			def random(x):
 				return int(np.random.random() * x)
@@ -358,22 +342,42 @@ def build_eye_trainset(train_set, labels):
 						return True
 				return False
 
-			for _ in xrange(2):
-				tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
-				br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
+			tl = (random(96 - MOUTH_HEIGHT), random(96 - MOUTH_WIDTH))
+			br = (tl[0] + MOUTH_HEIGHT, tl[1] + MOUTH_WIDTH)
 
-				while too_close(tl, tl_l, tl_r) or too_close(br, br_l, br_r):
-					tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
-					br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
+			while too_close(tl, tl_m, (0,0)) or too_close(br, br_m, (0,0)):
+				tl = (random(96 - MOUTH_HEIGHT), random(96 - MOUTH_WIDTH))
+				br = (tl[0] + MOUTH_HEIGHT, tl[1] + MOUTH_WIDTH)
 
-				eyes.append((get_subimage(train_set[i], tl, br), 0, i))
+			mouths.append((get_subimage(train_set[i], tl, br), 0))
 
-		return eyes
+	return mouths
+
+def cross_sample(mouths, eyes):
+	# the eyes sample is several times larger than the mouth
+	num_mouths = len(mouths) * 0.5
+	num_eyes = len(eyes) * 0.5
+
+	eyeshape = np.shape(eyes[0][0])
+	mouthshape = np.shape(mouths[0][0])
+
+	for i in xrange(1, int(num_eyes*0.1), 2):
+		try:
+			eyes[i] = (imresize(mouths[i+1][0], eyeshape), 0)
+		except Exception as e:
+			print e.message
+			import pdb; pdb.set_trace()
+
+	for i in xrange(1, int(num_mouths*0.1), 2):
+		mouths[i] = (imresize(eyes[i+1][0], mouthshape), 0)
+
+	np.random.shuffle(mouths)
+	np.random.shuffle(eyes)
+
+
 
 def build_eye_classifier(train_set, labels):
-	eyes = build_eye_trainset(train_set, labels)
-	eyeset = [(eye[0], eye[1]) for eye in eyes[:400]]
-	features_we_need = get_all_feature_coords((18, 24))
+	features_we_need = get_all_feature_coords((EYE_HEIGHT, EYE_WIDTH))
 
 	classifiers = []
 
