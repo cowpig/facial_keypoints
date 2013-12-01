@@ -10,6 +10,19 @@ cross_sample(mouths, eyes)
 mouthtrain_cutoff = int(len(mouths) * 0.7)
 eyetrain_cutoff = int(len(eyes) * 0.7)
 
+def sanitize(set):
+	sanitized = False
+	while not sanitized:
+		for i, x in enumerate(set):
+			s = np.shape(x[0])
+			if s[0] == 0 or s[1] == 0:
+				set.pop(i)
+				break
+
+			if i == len(set) - 1:
+				sanitized = True 
+
+
 ## EYES
 
 with open("eye_dataset.pkl", "wb") as f:
