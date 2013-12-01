@@ -206,7 +206,8 @@ def feature_d(m, top_left, bot_right):
 
 	return rect_tl + rect_br - rect_tr - rect_bl
 
-def get_all_feature_coords(matrix_size):
+def get_all_feature_coords(mat_size):
+	matrix_size = (mat_size[0]-1, mat_size[1]-1)
 	feat_coords = {}
 
 	feat_coords['a'] = set()
