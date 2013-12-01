@@ -114,41 +114,57 @@ with open("weak_classes_1ktrain.pkl", "rb") as f:
 with open("classifiers.pkl", "wb") as f:
 	boost_selection = cPickle.dump(f)
 
-############################################
+
 execfile("facial_keypoints.py")
 
-# train_set, labels, label_names = load_train_set("data/training.csv")
-
-
-# train_w_labels = []
-# for img, lbl in zip(train_set, labels):
-# 	good = True
-# 	for i in lbl[:12]:
-# 		if i == None:
-# 			good = False
-
-# 	if good:
-# 		train_w_labels.append((img, lbl))
-
-# test_imgs = random.sample(train_w_labels, 20)
 # test_scores = [eye_scores(to_matrix(img), classifier) for img, lbl in test_imgs]
+
+############################################
+# PRESENT
+execfile("facial_keypoints.py")
+
+train_set, labels, label_names = load_train_set("data/training.csv")
+
+train_w_labels = []
+for img, lbl in zip(train_set, labels):
+	good = True
+	for i in lbl[:12]:
+		if i == None:
+			good = False
+
+	if good:
+		train_w_labels.append((img, lbl))
+
+test_imgs = random.sample(train_w_labels, 20)
 
 with open("classifiers.pkl", "rb") as f:
 	boost_selection = cPickle.load(f)
 
 classifier = StrongClassifier(boost_selection)
 
+show = []
+for i in [1,2,3,7,8,9]:
+	show.append(test_imgs[i])
+
+with open("show.pkl", "wb") as f:
+    cPickle.dump(show, f)
+
 with open("show.pkl", "rb") as f:
-    test_imgs = cPickle.dump(f)
+    show = cPickle.load(f)
 
-
-for i, thing in enumerate(test_imgs[:4]):
-	img, lbl = thing
+def show_img(img):
+	img, lbl = img
 	eyes = cascade(img, classifier)
-	print eyes
-	print 
+	print "img {}: {}".format(i, eyes)
 	display_image(img)
 	display_image(get_subimage(img, eyes[1][0], eyes[1][1]))
 	display_image(get_subimage(img, eyes[0][0], eyes[0][1]))
 
+############################################
+
+
+
+
 # eyes = cascade(test_imgs[1][0], classifier)
+
+for clas in weak_classifiers[:2]:

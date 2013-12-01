@@ -288,6 +288,88 @@ def build_eye_trainset(train_set, labels):
 
 	return eyes
 
+	def build_mouth_trainset(train_set, labels):
+		to_shuffle = zip(train_set, labels)
+		np.random.shuffle(to_shuffle)
+		train_set, labels = zip(*to_shuffle)
+
+		mouth_left_corner = (22, 23)
+		mouth_right_corner = (24, 25)
+		mouth_center_top_lip = (26, 27)
+		mouth_center_bottom_lip = (28, 29)
+
+		mouths = []
+
+		for i, label in enumerate(labels):
+			dist_h = label_distance(label, mouth_left_corner, mouth_right_corner)
+			dist_v = label_distance(label, mouth_center_top_lip, mouth_center_bottom_lip)
+
+			# add each eye image with a positive label
+			if dist_h_left_eye != 0 and dist_h_left_eye != None:
+				left = label[4]
+				right = label[6]
+				middle = np.average([label[5], label[7]])
+
+				padding = (EYE_WIDTH - (right - left))
+
+				left = left - padding/2.
+				right = right + padding/2.
+				top = middle - EYE_HEIGHT/2.
+				bot = middle + EYE_HEIGHT/2.
+
+				left = int(np.round(left))
+				right = int(np.round(right))
+				top = int(np.round(top))
+				bot = int(np.round(bot))
+
+				subimg = get_subimage(train_set[i], (top, left), (bot, right))
+				tl_l = (top, left)
+				br_l = (bot, right)
+				eyes.append((subimg, 1, i))
+
+			if dist_h_right_eye != 0 and dist_h_right_eye != None:
+				left = label[10]
+				right = label[8]
+				middle = np.average([label[9], label[11]])
+
+				padding = (EYE_WIDTH - (right - left))
+
+				left = left - padding/2.
+				right = right + padding/2.
+				top = middle - EYE_HEIGHT/2.
+				bot = middle + EYE_HEIGHT/2.
+
+				left = int(np.round(left))
+				right = int(np.round(right))
+				top = int(np.round(top))
+				bot = int(np.round(bot))
+
+				subimg = get_subimage(train_set[i], (top, left), (bot, right))
+				tl_r = (top, left)
+				br_r = (bot, right)
+				eyes.append((flip_horizontal(subimg), 1, i))
+
+			def random(x):
+				return int(np.random.random() * x)
+
+			def too_close(new, *others):
+				for other in others:
+					if euclidean_distance(new, other) < TOO_CLOSE_VALUE:
+						return True
+				return False
+
+			for _ in xrange(2):
+				tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
+				br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
+
+				while too_close(tl, tl_l, tl_r) or too_close(br, br_l, br_r):
+					tl = (random(96 - EYE_HEIGHT), random(96 - EYE_WIDTH))
+					br = (tl[0] + EYE_HEIGHT, tl[1] + EYE_WIDTH)
+
+				eyes.append((get_subimage(train_set[i], tl, br), 0, i))
+
+		return eyes
+
 def build_eye_classifier(train_set, labels):
 	eyes = build_eye_trainset(train_set, labels)
 	eyeset = [(eye[0], eye[1]) for eye in eyes[:400]]
@@ -406,37 +488,37 @@ def cascade(img, strongclas):
 	potential_r = sorted(potential_r, key=lambda x: -x[0])[:10]
 
 
-	potential_l = [(strongclas.score(get_subimage(img, tl, br), 400), tl, br) for score, tl, br in potential_l]
-	potential_r = [(strongclas.score(get_subimage(img, tl, br), 400), tl, br) for score, tl, br in potential_r]
+	# potential_l = [(strongclas.score(get_subimage(img, tl, br), 400), tl, br) for score, tl, br in potential_l]
+	# potential_r = [(strongclas.score(get_subimage(img, tl, br), 400), tl, br) for score, tl, br in potential_r]
 
-	left = potential_l[0]
-	right = potential_r[0]
+	# left = potential_l[0]
+	# right = potential_r[0]
 
-	return ((left[1], left[2]), (right[1], right[2]), left[0] + right[0])
-	# pairs = []
+	# return ((left[1], left[2]), (right[1], right[2]), left[0] + right[0])
+	pairs = []
 
-	# # import pdb; pdb.set_trace()
+	# import pdb; pdb.set_trace()
 
-	# for score, tl_l, br_l in potential_l:
-	# 	for score, tl_r, br_r in potential_r:
-	# 		if (tl_l[1] > tl_r[1]) and (euclidean_distance(tl_l, tl_r) > TOO_CLOSE_VALUE):
-	# 			frame_l = get_subimage(img, tl_l, br_l)
-	# 			frame_r = get_subimage(img, tl_r, br_r)
-	# 			pairs.append(((tl_l, br_l, frame_l), (tl_r, br_r, frame_r)))
-	# 		else:
-	# 			# import pdb; pdb.set_trace()
-	# 			pass
+	for score, tl_l, br_l in potential_l:
+		for score, tl_r, br_r in potential_r:
+			if (tl_l[1] > tl_r[1]) and (euclidean_distance(tl_l, tl_r) > TOO_CLOSE_VALUE):
+				frame_l = get_subimage(img, tl_l, br_l)
+				frame_r = get_subimage(img, tl_r, br_r)
+				pairs.append(((tl_l, br_l, frame_l), (tl_r, br_r, frame_r)))
+			else:
+				# import pdb; pdb.set_trace()
+				pass
 
-	# print len(pairs)
+	print len(pairs)
 
-	# maximum = (None, None, 0.0)
-	# for pair in pairs:
-	# 	# import pdb; pdb.set_trace()
-	# 	pair_score = strongclas.score(pair[0][2]) + strongclas.score(pair[1][2])
-	# 	if pair_score > maximum[2]:
-	# 		maximum = (pair[0][:2], pair[1][:2], pair_score)
+	maximum = (None, None, 0.0)
+	for pair in pairs:
+		# import pdb; pdb.set_trace()
+		pair_score = strongclas.score(pair[0][2]) + strongclas.score(pair[1][2])
+		if pair_score > maximum[2]:
+			maximum = (pair[0][:2], pair[1][:2], pair_score)
 
-	# return maximum
+	return maximum
 
 	# max_dist_horizontal = 0
 	# max_dist_vertical = 0
