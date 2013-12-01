@@ -5,11 +5,6 @@ train_set, labels, label_names = load_train_set("data/training.csv")
 mouths = build_mouth_trainset(train_set, labels)
 eyes = build_eye_trainset(train_set, labels)
 
-cross_sample(mouths, eyes)
-
-mouthtrain_cutoff = int(len(mouths) * 0.7)
-eyetrain_cutoff = int(len(eyes) * 0.7)
-
 def sanitize(set):
 	sanitized = False
 	while not sanitized:
@@ -22,6 +17,13 @@ def sanitize(set):
 			if i == len(set) - 1:
 				sanitized = True 
 
+sanitize(mouths)
+sanitize(eyes)
+
+cross_sample(mouths, eyes)
+
+mouthtrain_cutoff = int(len(mouths) * 0.7)
+eyetrain_cutoff = int(len(eyes) * 0.7)
 
 ## EYES
 
@@ -36,7 +38,7 @@ eyeset = eyes[:eyetrain_cutoff]
 for featname in ['a', 'b', 'c', 'd']:
 	for i, feature_coord in enumerate(features_we_need[featname]):
 		if i % 1000 == 0:
-			print "{} weakies pumped out".format(i)
+			print "{} weakies pumped out (eyes)".format(i)
 
 		weak = WeakClass(feature_dict[featname], *feature_coord)
 		weak.train(eyeset)
@@ -83,7 +85,7 @@ mouthset = mouths[:eyetrain_cutoff]
 for featname in ['a', 'b', 'c', 'd']:
 	for i, feature_coord in enumerate(features_we_need[featname]):
 		if i % 1000 == 0:
-			print "{} weakies pumped out".format(i)
+			print "{} weakies pumped out (mouths)".format(i)
 
 		weak = WeakClass(feature_dict[featname], *feature_coord)
 		weak.train(mouthset)
