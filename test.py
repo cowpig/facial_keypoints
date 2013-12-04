@@ -47,6 +47,45 @@ for featname in ['a', 'b', 'c', 'd']:
 with open("weaktrain_eyes.pkl", "wb") as f:
 	cPickle.dump(weak_classifiers, f)
 
+# reload (damn)
+
+execfile("facial_keypoints.py")
+
+with open("weaktrain_eyes.pkl", "rb") as f:
+	weak_classifiers = cPickle.load(f)
+
+with open("eye_dataset.pkl", "rb") as f:
+	eyes = cPickle.load(f)
+
+eyetrain_cutoff = int(len(eyes) * 0.7)
+eyeset = eyes[:eyetrain_cutoff]
+
+imgs, lbls = zip(*eyeset)
+
+perceptrons = set(weak_classifiers)
+
+lbls = np.array([int(label) for label in lbls])
+
+positives = sum(lbls)
+n = len(imgs)
+negatives = n - positives
+
+# evals is a bit of a misnomer here
+#	it's really a vector of which examples the classifier got right
+evals = {}
+for perceptron in perceptrons:
+	evals[perceptron] = np.abs(lbls - np.array([perceptron.evaluate(img) for img in imgs])) 
+
+weights = []
+for l in lbls:
+	if l:
+		weights.append(1./(2*positives))
+	else:
+		weights.append(1./(2*negatives))
+
+weights = np.array(weights)
+perceptrons = set(weak_classifiers)
+
 boost_selection = []
 T = 500
 
@@ -80,7 +119,7 @@ with open("mouth_dataset.pkl", "wb") as f:
 weak_classifiers = []
 features_we_need = get_all_feature_coords((MOUTH_HEIGHT, MOUTH_WIDTH))
 
-mouthset = mouths[:eyetrain_cutoff]
+mouthset = mouths[:mouthtrain_cutoff]
 
 for featname in ['a', 'b', 'c', 'd']:
 	for i, feature_coord in enumerate(features_we_need[featname]):
@@ -93,6 +132,45 @@ for featname in ['a', 'b', 'c', 'd']:
 
 with open("weaktrain_mouths.pkl", "wb") as f:
 	cPickle.dump(weak_classifiers, f)
+
+# reload (damn)
+
+execfile("facial_keypoints.py")
+
+with open("weaktrain_mouths.pkl", "rb") as f:
+	weak_classifiers = cPickle.load(f)
+
+with open("mouth_dataset.pkl", "rb") as f:
+	mouths = cPickle.load(f)
+
+mouthtrain_cutoff = int(len(mouths) * 0.7)
+mouthset = mouths[:mouthtrain_cutoff]
+
+imgs, lbls = zip(*mouthset)
+
+perceptrons = set(weak_classifiers)
+
+lbls = np.array([int(label) for label in lbls])
+
+positives = sum(lbls)
+n = len(imgs)
+negatives = n - positives
+
+# evals is a bit of a misnomer here
+#	it's really a vector of which examples the classifier got right
+evals = {}
+for perceptron in perceptrons:
+	evals[perceptron] = np.abs(lbls - np.array([perceptron.evaluate(img) for img in imgs])) 
+
+weights = []
+for l in lbls:
+	if l:
+		weights.append(1./(2*positives))
+	else:
+		weights.append(1./(2*negatives))
+
+weights = np.array(weights)
+perceptrons = set(weak_classifiers)
 
 boost_selection = []
 T = 500
@@ -117,6 +195,47 @@ for t in xrange(T):
 import cPickle
 with open("boosted_mouths.pkl", "wb") as f:
 	cPickle.dump(boost_selection, f)
+
+
+######
+# Testing
+
+
+import cPickle
+execfile("facial_keypoints.py")
+
+with open("mouth_dataset.pkl", "rb") as f:
+	mouths = cPickle.load(f)
+
+with open("eye_dataset.pkl", "rb") as f:
+	eyes = cPickle.load(f)
+
+with open("boosted_mouths.pkl", "rb") as f:
+	boosted_mouths = cPickle.load(f)
+
+with open("boosted_eyes.pkl", "rb") as f:
+	boosted_eyes = cPickle.load(f)
+
+mouthtrain_cutoff = int(len(mouths) * 0.7)
+eyetrain_cutoff = int(len(eyes) * 0.7)
+
+test_m_imgs, test_m_lbls = zip(*mouths[mouthtrain_cutoff:])
+test_e_imgs, test_e_lbls = zip(*eyes[eyetrain_cutoff:])
+
+strong_m = StrongClassifier(boosted_mouths)
+strong_e = StrongClassifier(boosted_eyes)
+
+m_results = [strong_m.evaluate(img) for img in test_m_imgs]
+e_results = []
+for img in test_e_imgs:
+	try:
+		e_results.append(strong_e.evaluate(img))
+	except Exception as e:
+		print e.message
+		e_results.append(0)
+
+m_score = sum(np.logical_not(np.abs(np.array(m_results) - np.array(test_m_lbls)))) / float(len(test_m_lbls))
+
 
 # with open("eyes_feat_coords.pkl", "wb") as f:
 # 	cPickle.dump(features_we_need, f)
