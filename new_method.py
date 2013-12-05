@@ -75,7 +75,7 @@ def create_dataset(trainset, keypoint_name):
 	it = 0
 	for img, lbl in trainset:
 		if lbl[i] == None or lbl[j] == None:
-			print "skipping {} (unlabeled)".format(it)
+			print "{} : skipping {} (unlabeled)".format(keypoint_name, it)
 			continue
 
 		r = lbl[i]
@@ -84,8 +84,7 @@ def create_dataset(trainset, keypoint_name):
 		box = box_around_coords((r,c), BOX_RADIUS)
 
 		if box == None:
-			print "skipping {} (bad box - center at [{}, {}])".format(it, r, c)
-			import pdb;pdb.set_trace()
+			print "{} : skipping {} (bad box - center at [{}, {}])".format(keypoint_name, it, r, c)
 			continue
 
 		pos = get_subimage(img, *box)
