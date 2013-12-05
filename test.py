@@ -40,7 +40,7 @@ for featname in ['a', 'b', 'c', 'd']:
 		if i % 1000 == 0:
 			print "{} weakies pumped out (eyes)".format(i)
 
-		weak = WeakClass(feature_dict[featname], *feature_coord)
+		weak = WeakClass(FEATURE_DICT[featname], *feature_coord)
 		weak.train(eyeset)
 		weak_classifiers.append(weak)
 
@@ -126,7 +126,7 @@ for featname in ['a', 'b', 'c', 'd']:
 		if i % 1000 == 0:
 			print "{} weakies pumped out (mouths)".format(i)
 
-		weak = WeakClass(feature_dict[featname], *feature_coord)
+		weak = WeakClass(FEATURE_DICT[featname], *feature_coord)
 		weak.train(mouthset)
 		weak_classifiers.append(weak)
 
@@ -235,6 +235,7 @@ for img in test_e_imgs:
 		e_results.append(0)
 
 m_score = sum(np.logical_not(np.abs(np.array(m_results) - np.array(test_m_lbls)))) / float(len(test_m_lbls))
+e_score = sum(np.logical_not(np.abs(np.array(e_results) - np.array(test_e_lbls)))) / float(len(test_e_lbls))
 
 
 # with open("eyes_feat_coords.pkl", "wb") as f:

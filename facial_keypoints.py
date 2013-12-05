@@ -9,27 +9,27 @@ from scipy.misc import imresize
 
 
 # literals that are specific to our dataset
-bad_images = [1747, 1908]
+BAD_IMAGES = [1747, 1908]
 
-keypoints = {
-	left_eye_center      	: (1,0),
-	right_eye_center     	: (3,2),
-	left_eye_inner       	: (5,4),
-	left_eye_outer       	: (7,6),
-	right_eye_inner      	: (9,8),
-	right_eye_outer      	: (11,10),
-	left_eyebrow_inner   	: (13,12),
-	left_eyebrow_outer   	: (15,14),
-	right_eyebrow_inner  	: (17,16),
-	right_eyebrow_outer  	: (19,18),
-	nose_tip             	: (21,20),
-	left_mouth_corner    	: (23,22),
-	right_mouth_corner   	: (25,24),
-	center_mouth_top_lip 	: (27,26),
-	center_mouth_bottom_lip : (29,28)
+KEYPOINT_DICT = {
+	"left_eye_center"      	  : (1,0),
+	"right_eye_center"     	  : (3,2),
+	"left_eye_inner"       	  : (5,4),
+	"left_eye_outer"       	  : (7,6),
+	"right_eye_inner"      	  : (9,8),
+	"right_eye_outer"      	  : (11,10),
+	"left_eyebrow_inner"   	  : (13,12),
+	"left_eyebrow_outer"   	  : (15,14),
+	"right_eyebrow_inner"  	  : (17,16),
+	"right_eyebrow_outer"  	  : (19,18),
+	"nose_tip"             	  : (21,20),
+	"left_mouth_corner"    	  : (23,22),
+	"right_mouth_corner"   	  : (25,24),
+	"center_mouth_top_lip" 	  : (27,26),
+	"center_mouth_bottom_lip" : (29,28)
 }
 
-feature_dict = {
+FEATURE_DICT = {
 	'a' : feature_a,
 	'b' : feature_b,
 	'c' : feature_c,
@@ -56,7 +56,7 @@ def load_train_set(filename):
 
 		for i, line in enumerate(r):
 			try:
-				if i not in bad_images:
+				if i not in BAD_IMAGES:
 					labels.append([str_to_float(s) for s in line[:-1]])
 					train_set.append([float(s) for s in line[-1].split(' ')])
 			except:
