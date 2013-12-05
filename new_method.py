@@ -212,12 +212,12 @@ class PriorityQ(list):
 		return None
 
 
-def scan_image(img, classifiers):
+def cascade_scan(img, classifiers):
 	iimg = integral_matrix(img)
 
 	tops = {}
 	for name in classifiers:
-		tops[name] = PriorityQ(50)
+		tops[name] = PriorityQ(20)
 		
 	for i in xrange(BOX_RADIUS+1, 95-BOX_RADIUS, BOX_RADIUS):
 		for j in xrange(BOX_RADIUS+1, 95-BOX_RADIUS, BOX_RADIUS):
@@ -225,9 +225,33 @@ def scan_image(img, classifiers):
 			frame = get_subimage(iimg, *box)
 
 			for name, clas in classifiers.items():
-				tops[name].add((clas.score(frame)), *box)
+				tops[name].add((clas.score(frame, 20), box))
 
-	return tops
+	tops2 = {}
+	for name in classifiers:
+		tops2[name] = PriorityQ(10)
+		clas = classifiers[name]
+		for score, box in tops[name]:
+			frame = get_subimage(iimg, *box)
+			tops2[name].add((clas.score(frame, 50), box))
+
+	tops = {}
+	for name in classifiers:
+		tops[name] = PriorityQ(5)
+		clas = classifiers[name]
+		for score, box in tops2[name]:
+			frame = get_subimage(iimg, *box)
+			tops[name].add((clas.score(frame, 200), box))
+
+	tops2 = {}
+	for name in classifiers:
+		tops2[name] = PriorityQ(4)
+		clas = classifiers[name]
+		for score, box in tops[name]:
+			frame = get_subimage(iimg, *box)
+			tops2[name].add((clas.score(frame, 500), box))
+
+	return tops2
 
 
 
