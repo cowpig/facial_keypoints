@@ -11,21 +11,23 @@ from scipy.misc import imresize
 # literals that are specific to our dataset
 bad_images = [1747, 1908]
 
-left_eye_center      	= (0, 1)
-right_eye_center     	= (2, 3)
-left_eye_inner       	= (4, 5)
-left_eye_outer       	= (6, 7)
-right_eye_inner      	= (8, 9)
-right_eye_outer      	= (10, 11)
-left_eyebrow_inner   	= (12, 13)
-left_eyebrow_outer   	= (14, 15)
-right_eyebrow_inner  	= (16, 17)
-right_eyebrow_outer  	= (18, 19)
-nose_tip             	= (20, 21)
-mouth_left_corner    	= (22, 23)
-mouth_right_corner   	= (24, 25)
-mouth_center_top_lip 	= (26, 27)
-mouth_center_bottom_lip = (28, 29)
+keypoints = {
+	left_eye_center      	: (1,0),
+	right_eye_center     	: (3,2),
+	left_eye_inner       	: (5,4),
+	left_eye_outer       	: (7,6),
+	right_eye_inner      	: (9,8),
+	right_eye_outer      	: (11,10),
+	left_eyebrow_inner   	: (13,12),
+	left_eyebrow_outer   	: (15,14),
+	right_eyebrow_inner  	: (17,16),
+	right_eyebrow_outer  	: (19,18),
+	nose_tip             	: (21,20),
+	left_mouth_corner    	: (23,22),
+	right_mouth_corner   	: (25,24),
+	center_mouth_top_lip 	: (27,26),
+	center_mouth_bottom_lip : (29,28)
+}
 
 feature_dict = {
 	'a' : feature_a,
