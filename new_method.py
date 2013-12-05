@@ -203,10 +203,29 @@ if __name__ == "__main__":
 		with open("data/{}_dataset.pkl".format(keypoint_name), 'rb') as f:
 			fullset = cPickle.load(f)
 
-		train = fullset[:int(len(fullset)*0.7)]
+		train = fullset[:int(len(fullset)*0.05)]
+
+		imgs, lbls = zip(*train)
+		iimgs = [integral_matrix(img) for img in imgs]
+
+		trainset = zip(iimgs, lbls)
 
 		weakies = get_weak_classifiers(train, keypoint_name)
 		boosted = boost(train, keypoint_name, weakies, 500)
 
 		with open("data/{}_boost.pkl", "wb") as f:
 			cPickle.dump(boosted, f)
+
+		test = fullset[int(len(fullset)*0.05):]
+
+		imgs, lbls = zip(*test)
+		iimgs = [integral_matrix(img) for img in imgs]
+
+		classifier = StrongClassifier(boosted)
+
+		results = np.array([StrongClassifier.evaluate(iimg) for iimg in imgs])
+		lbls = np.array(lbls)
+
+		score = sum(np.logical_not(np.abs(results - lbls))) / float(len(lbls))
+
+		print "SCORE FOR {}: {}".format(keypoint_name, score)
