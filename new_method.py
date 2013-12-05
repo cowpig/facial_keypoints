@@ -196,6 +196,8 @@ def boost(trainset, keypoint_name, weak_classifiers, T):
 		weights = weights * beta ** (1 - evals[percep])
 		boost_selection.append((percep, np.log(1./beta)))
 
+	return boost_selection
+
 class PriorityQ(list):
 	def __init__(self, *args, **kwargs):
 		list.__init__(self, *args)
@@ -253,7 +255,7 @@ def cascade_scan(img, classifiers):
 
 	return tops2
 
-
+9348041
 
 if __name__ == "__main__":
 	from sys import argv
@@ -274,7 +276,7 @@ if __name__ == "__main__":
 		weakies = get_weak_classifiers(train, keypoint_name)
 		boosted = boost(train, keypoint_name, weakies, 500)
 
-		with open("data/{}_boost.pkl", "wb") as f:
+		with open("data/{}_boost.pkl".format(keypoint_name), "wb") as f:
 			cPickle.dump(boosted, f)
 
 		test = fullset[int(len(fullset)*0.7):]
