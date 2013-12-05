@@ -1,10 +1,12 @@
+from Queue import heapq
+
 execfile("facial_keypoints.py")
 
 BOX_RADIUS = 8
 BOX_DIAM = 2 * BOX_RADIUS + 1
 FEATCOORD_DICT = get_all_feature_coords((BOX_DIAM, BOX_DIAM))
 
-def box_around_coords(center, boxsize):
+def box_around_coords(center, boxsize=BOX_RADIUS):
 	row, col = center
 	if type(boxsize) == tuple:
 		d_row, d_col = boxsize
@@ -193,6 +195,41 @@ def boost(trainset, keypoint_name, weak_classifiers, T):
 		beta = (err/(1-err))
 		weights = weights * beta ** (1 - evals[percep])
 		boost_selection.append((percep, np.log(1./beta)))
+
+class PriorityQ(list):
+	def __init__(self, *args, **kwargs):
+		list.__init__(self, *args)
+		heapq.heapify(self)
+		if 'maxsize' in kwargs:
+			self.maxsize = kwargs['maxsize']
+		else:
+			self.maxsize = 10
+
+	def add(self, item):
+		if len(self) >= self.maxsize:
+			return heapq.heappushpop(self, item)
+		heapq.heappush(self, item)
+		return None
+
+
+def scan_image(img, classifiers):
+	iimg = integral_matrix(img)
+
+	tops = {}
+	for name in classifiers:
+		tops[name] = PriorityQ(50)
+		
+	for i in xrange(BOX_RADIUS+1, 95-BOX_RADIUS, BOX_RADIUS):
+		for j in xrange(BOX_RADIUS+1, 95-BOX_RADIUS, BOX_RADIUS):
+			box = box_around_coords((i,j))
+			frame = get_subimage(iimg, *box)
+
+			for name, clas in classifiers.items():
+				tops[name].add((clas.score(frame)), *box)
+
+	return tops
+
+
 
 if __name__ == "__main__":
 	from sys import argv

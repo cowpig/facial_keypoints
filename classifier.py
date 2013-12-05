@@ -97,7 +97,7 @@ class StrongClassifier(object):
 		return score / beta_sum
 
 	def evaluate(self, img, up_to=None):
-		return self.score(img) >= 0.5
+		return self.score(img, up_to) >= 0.5
 
 
 # takes a set/list of weak classifiers and applies boosting to them, as described in the
