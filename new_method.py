@@ -203,7 +203,7 @@ if __name__ == "__main__":
 		with open("data/{}_dataset.pkl".format(keypoint_name), 'rb') as f:
 			fullset = cPickle.load(f)
 
-		train = fullset[:int(len(fullset)*0.05)]
+		train = fullset[:int(len(fullset)*0.01)]
 
 		imgs, lbls = zip(*train)
 		iimgs = [integral_matrix(img) for img in imgs]
@@ -216,7 +216,7 @@ if __name__ == "__main__":
 		with open("data/{}_boost.pkl", "wb") as f:
 			cPickle.dump(boosted, f)
 
-		test = fullset[int(len(fullset)*0.05):]
+		test = fullset[int(len(fullset)*0.01):]
 
 		imgs, lbls = zip(*test)
 		iimgs = [integral_matrix(img) for img in imgs]
