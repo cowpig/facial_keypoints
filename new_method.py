@@ -72,8 +72,9 @@ def create_dataset(trainset, keypoint_name):
 	else:
 		other_idxs = list(mouth_idxs.union(eye_idxs))
 
-	it = 0
+	it = -1
 	for img, lbl in trainset:
+		it += 1
 		if lbl[i] == None or lbl[j] == None:
 			print "{} : skipping {} (unlabeled)".format(keypoint_name, it)
 			continue
@@ -131,8 +132,6 @@ def create_dataset(trainset, keypoint_name):
 		# print "appending neg and pos for {}".format(it)
 		output.append((pos, 1))
 		output.append((neg, 0))
-
-		it += 1
 
 	return output
 
@@ -200,6 +199,11 @@ if __name__ == "__main__":
 	if len(argv) != 2:
 		print "give me a keypoint plz"
 	else:
-		train_set, labels, label_names = load_train_set("data/training.csv")
+		keypoint_name = argv[1]
+		with open("data/{}_dataset.pkl".format(keypoint_name), 'rb') as f:
+			fullset = cPickle.load(f)
 
-		full_set = zip(train_set, labels)
+		train = fullset[:int(len(fullset)*0.7)]
+		np.random.shuffle(train)
+
+		
