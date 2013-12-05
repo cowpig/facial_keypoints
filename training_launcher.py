@@ -18,6 +18,6 @@ KEYPOINT_DICT = {
 
 from subprocess import Popen
 
-cmds = ["python new_method.py {}".format(name) for name in KEYPOINT_DICT]
+cmds = ["nice python new_method.py {}".format(name) for name in KEYPOINT_DICT]
 
 processes = [Popen(cmd, shell=True) for cmd in cmds]
