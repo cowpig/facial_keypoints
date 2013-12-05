@@ -215,6 +215,8 @@ class PriorityQ(list):
 
 
 def cascade_scan(img, classifiers):
+	if type(img) == list:
+		img = to_matrix(img)
 	iimg = integral_matrix(img)
 
 	tops = {}
@@ -254,8 +256,6 @@ def cascade_scan(img, classifiers):
 			tops2[name].add((clas.score(frame, 500), box))
 
 	return tops2
-
-9348041
 
 if __name__ == "__main__":
 	from sys import argv
