@@ -223,7 +223,7 @@ if __name__ == "__main__":
 
 		classifier = StrongClassifier(boosted)
 
-		results = np.array([StrongClassifier.evaluate(iimg) for iimg in imgs])
+		results = np.array([classifier.evaluate(iimg) for iimg in imgs])
 		lbls = np.array(lbls)
 
 		score = sum(np.logical_not(np.abs(results - lbls))) / float(len(lbls))
