@@ -140,15 +140,15 @@ def get_weak_classifiers(trainset, keypoint_name):
 	for featname in ['a', 'b', 'c', 'd']:
 		for i, feature_coord in enumerate(FEATCOORD_DICT[featname]):
 			if i % 1000 == 0:
-				print "{} weakies pumped out ({})".format(i, keypoint_name)
+				print "{} - {} weakies pumped out ({})".format(featname, i, keypoint_name)
 
-			weak = WeakClass(feature_dict[featname], *feature_coord)
+			weak = WeakClass(FEATURE_DICT[featname], *feature_coord)
 			weak.train(trainset)
 			weak_classifiers.append(weak)
 
 	return weak_classifiers
 
-def boost(weak_classifiers, trainset, T, keypoint_name):
+def boost(trainset, keypoint_name, weak_classifiers, T):
 	imgs, lbls = zip(*trainset)
 
 	perceptrons = set(weak_classifiers)
@@ -204,6 +204,9 @@ if __name__ == "__main__":
 			fullset = cPickle.load(f)
 
 		train = fullset[:int(len(fullset)*0.7)]
-		np.random.shuffle(train)
 
-		
+		weakies = get_weak_classifiers(train, keypoint_name)
+		boosted = boost(train, keypoint_name, weakies, 500)
+
+		with open("data/{}_boost.pkl", "wb") as f:
+			cPickle.dump(boosted, f)
